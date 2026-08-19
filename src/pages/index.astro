@@ -1,0 +1,103 @@
+---
+import Base from '../layouts/Base.astro';
+import Ticker from '../components/Ticker.astro';
+import Hero from '../components/Hero.astro';
+import Why from '../components/Why.astro';
+import Advantages from '../components/Advantages.astro';
+import Accounts from '../components/Accounts.astro';
+import Compare from '../components/Compare.astro';
+import Steps from '../components/Steps.astro';
+import Banner from '../components/Banner.astro';
+import Platforms from '../components/Platforms.astro';
+import Faq from '../components/Faq.astro';
+import CountryGrid from '../components/CountryGrid.astro';
+import CtaBand from '../components/CtaBand.astro';
+
+import { COUNTRIES } from '../config/countries';
+import { useT, countryPath, DEFAULT_ENTITY, type UIKey } from '../i18n/ui';
+import { abs, countryAlternates } from '../lib/seo';
+import {
+  graph, organization, website, webPage, brokerEntity,
+  breadcrumbs, faqPage, howTo, itemList,
+} from '../lib/schema';
+
+/**
+ * Portada — la página general en español.
+ *
+ * Cubre lo que no cambia entre jurisdicciones: tipos de cuenta, comparativa,
+ * plataformas y proceso de alta. Lo que sí cambia (entidad reguladora,
+ * apalancamiento, métodos de depósito) vive en las 17 páginas de mercado, que
+ * se enlazan desde aquí.
+ *
+ * Declara `DEFAULT_ENTITY` de forma explícita: sin país no hay entidad que
+ * heredar, y el bloque de bono no puede quedar a merced de un valor por
+ * defecto implícito.
+ */
+const t = useT();
+
+const title = t('seo.home.title');
+const description = t('seo.home.desc');
+
+const qas = [1, 2, 3, 4, 5, 6].map((n) => ({
+  q: t(`faq.q${n}` as UIKey),
+  a: t(`faq.a${n}` as UIKey),
+}));
+
+const steps = [1, 2, 3, 4].map((n) => ({
+  name: t(`steps.${n}.t` as UIKey),
+  text: t(`steps.${n}.d` as UIKey),
+}));
+
+const schema = graph(
+  organization(),
+  website(),
+  brokerEntity(),
+  webPage({ url: abs(''), title, description, updated: new Date() }),
+  breadcrumbs([{ name: t('nav.home'), path: '' }]),
+  faqPage(qas),
+  howTo({
+    name: t('steps.title'),
+    description: t('steps.sub'),
+    totalTime: 'PT3M',
+    steps,
+  }),
+  itemList(
+    t('country.others'),
+    COUNTRIES.map((c) => ({ name: c.name, path: countryPath(c.code) })),
+  ),
+);
+---
+
+<Base
+  title={title}
+  description={description}
+  path=""
+  alternates={countryAlternates()}
+  schema={schema}
+>
+  <Ticker />
+  <Hero />
+  <Why />
+  <Advantages entity={DEFAULT_ENTITY} />
+  <Accounts />
+  <Compare />
+  <Steps />
+
+  <div class="band-paper-2">
+    <div class="wrap">
+      <Banner seed="home-mid" double />
+    </div>
+  </div>
+
+  <Platforms />
+  <Faq />
+
+  <div class="band-paper-2">
+    <div class="wrap">
+      <Banner seed="home-late" double />
+    </div>
+  </div>
+
+  <CountryGrid />
+  <CtaBand source="home-footer" />
+</Base>

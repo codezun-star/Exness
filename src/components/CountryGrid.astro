@@ -1,0 +1,84 @@
+---
+import {
+  COUNTRIES_BY_TIER, siblingsOf, countryEntity, countryHreflang,
+} from '../config/countries';
+import type { Country } from '../config/countries';
+import { useT, countryPath } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/** Enlaces internos hacia el resto de mercados; `siblingsOf` excluye el actual. */
+const list = country ? siblingsOf(country) : COUNTRIES_BY_TIER;
+---
+
+{list.length > 0 && (
+  <section class="band band-paper" id="paises">
+    <div class="wrap">
+      <p class="eyebrow">{t('country.breadcrumb')}</p>
+      <h2 class="display display-l countries-title">{t('country.others')}</h2>
+      <p class="lede countries-lede">{t('country.othersSub')}</p>
+
+      <ul class="linklist country-columns">
+        {list.map((c) => (
+          <li>
+            <a
+              href={countryPath(c.code)}
+              hreflang={countryHreflang(c)}
+            >
+              <span class="code">{c.code.toUpperCase()}</span>
+              <span class="country-name">{c.name}</span>
+              <span class="country-lev mono">{countryEntity(c).maxLeverage}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <p class="countries-all">
+        <a href="/">{t('country.all')}</a>
+      </p>
+    </div>
+  </section>
+)}
+
+<style>
+  .countries-title { max-width: 16ch; margin-bottom: 1.25rem; }
+  .countries-lede { margin: 0 0 clamp(2rem, 4vw, 3rem); }
+
+  .country-columns {
+    columns: 1;
+    column-gap: 3.5rem;
+  }
+
+  @media (min-width: 40rem) { .country-columns { columns: 2; } }
+  @media (min-width: 64rem) { .country-columns { columns: 3; } }
+
+  .country-columns li { break-inside: avoid; }
+
+  .country-name { flex: 1; }
+
+  .country-lev {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    flex: none;
+  }
+
+  .countries-all {
+    margin: 2rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .countries-all a {
+    color: var(--color-accent-ink);
+    text-decoration: none;
+  }
+
+  .countries-all a:hover { text-decoration: underline; }
+</style>

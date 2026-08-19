@@ -1,0 +1,81 @@
+---
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+  /** Métodos a mostrar; por defecto los del país */
+  methods?: string[];
+}
+
+const { country, methods } = Astro.props;
+const t = useT(country);
+
+const list = methods ?? country?.payments ?? [
+  'Visa/Mastercard', 'Skrill', 'Neteller', 'USDT',
+];
+
+const label = country ? country.name : t('stats.countries');
+---
+
+<section class="band band-paper" id="pagos">
+  <div class="wrap">
+    <p class="eyebrow">{t('trust.deposit')}</p>
+    <h2 class="display display-m payments-title">
+      {t('payments.title', { country: label })}
+    </h2>
+    <p class="lede payments-lede">{t('payments.sub')}</p>
+
+    <ul class="payment-list">
+      {list.map((method) => (
+        <li class="payment-item">{method}</li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .payments-title { max-width: 20ch; margin-bottom: 1rem; }
+  .payments-lede { margin: 0 0 2.25rem; }
+
+  .payment-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .payment-item {
+    flex: 1 1 auto;
+    padding: 1.125rem 1.5rem 1.125rem 0;
+    border-bottom: 1px solid var(--color-line);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    position: relative;
+  }
+
+  /* En pantallas anchas cada método ocupa una celda de la fila; por debajo
+     de 40rem se apilan y deben poder partirse: "Transferência bancária" o
+     "โอนเงินผ่านธนาคารไทย" no caben en 320 px sin romper. */
+  @media (min-width: 40rem) {
+    .payment-item { white-space: nowrap; }
+  }
+
+  @media (max-width: 39.99rem) {
+    .payment-item { flex: 1 1 100%; }
+  }
+
+  .payment-item::before {
+    content: '';
+    display: inline-block;
+    inline-size: 6px;
+    block-size: 6px;
+    background: var(--color-accent-3);
+    margin-inline-end: 0.75rem;
+    vertical-align: middle;
+  }
+</style>

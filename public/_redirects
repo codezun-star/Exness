@@ -1,0 +1,15 @@
+# Cloudflare Pages / Netlify
+#
+# Sitio monolingüe en español, sin prefijo de idioma: la portada es "/" y cada
+# mercado vive en /<código ISO>/. La raíz NO redirige — es una página indexable
+# y el x-default del grupo hreflang. La sugerencia geográfica se hace en el
+# cliente (src/components/GeoNotice.astro), que es lo que Google acepta sin
+# considerarlo cloaking.
+
+# Atajos sin barra final para campañas y material impreso.
+/mx      /mx/    301
+/co      /co/    301
+/cl      /cl/    301
+/pe      /pe/    301
+/ar      /ar/    301
+/blog    /blog/  301

@@ -1,0 +1,302 @@
+---
+import { goUrl } from '../config/affiliate';
+import { SITE, BRAND } from '../config/site';
+import { STATS } from '../config/offers';
+import { countryEntity, type Country } from '../config/countries';
+import { useT, DEFAULT_ENTITY } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+const entity = country ? countryEntity(country) : null;
+const leverage = (entity ?? DEFAULT_ENTITY).maxLeverage;
+---
+
+{/*
+  Aviso de una sola pantalla: titular, una línea, tres datos y el botón. Nada
+  más. Si hay que hacer scroll dentro de un modal, el modal está de más.
+
+  Los dos botones de cierre van dentro de <form method="dialog">: es el
+  mecanismo nativo del elemento, cierra el diálogo aunque el JavaScript falle
+  o esté bloqueado. Un anuncio que no se puede cerrar no es agresivo, es una
+  trampa, y acaba en el botón "atrás".
+
+  El titular cambia según el motivo: «Antes de irte» sólo cuando el puntero
+  sale de verdad de la ventana; si el disparador fue terminar la lectura, el
+  mensaje es de continuidad. El HTML se sirve con esa segunda variante y el
+  script sustituye el texto en el caso de salida.
+*/}
+<dialog
+  class="exit on-ink"
+  id="exit-modal"
+  aria-labelledby="exit-title"
+  data-title-leave={t('exit.title')}
+  data-sub-leave={t('exit.sub')}
+>
+  <form method="dialog">
+    <button class="exit-close" id="exit-close" aria-label={t('exit.close')}>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </button>
+  </form>
+
+  <img
+    class="exit-logo"
+    src={BRAND.lockup.src}
+    width={BRAND.lockup.width}
+    height={BRAND.lockup.height}
+    alt={SITE.brand}
+    loading="lazy"
+    decoding="async"
+  />
+
+  <p class="display exit-title" id="exit-title">{t('exit.readTitle')}</p>
+  <p class="exit-sub" id="exit-sub">{t('exit.readSub')}</p>
+
+  <p class="exit-facts mono">
+    <span>{STATS.minDeposit} USD</span>
+    <span>{leverage}</span>
+    <span>3 min</span>
+  </p>
+
+  <a
+    class="btn btn-accent btn-block"
+    href={goUrl('real', 'exit-intent', country?.code)}
+    rel="sponsored nofollow noopener"
+    data-cta="exit-intent"
+  >{t('exit.cta')}</a>
+
+  <form method="dialog">
+    <button class="exit-later">{t('exit.dismiss')}</button>
+  </form>
+
+  <p class="exit-terms">{t('risk.short')}</p>
+</dialog>
+
+<style>
+  /* Preflight de Tailwind pone margin:0 en todo, incluido <dialog>, y eso anula
+     el margin:auto de la hoja del navegador: el modal se quedaba pegado a la
+     esquina superior izquierda. Aquí se centra a mano en lugar de depender del
+     estilo del agente de usuario. */
+  .exit {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    inline-size: min(90vw, 24rem);
+    max-block-size: 90svh;
+    padding: 1.75rem 1.5rem 1.5rem;
+    background: var(--color-ink-2);
+    color: var(--color-paper);
+    border: 1px solid var(--color-line-ink);
+    border-top: 3px solid var(--color-accent);
+    overflow: hidden auto;
+  }
+
+  .exit::backdrop { background: rgba(11, 11, 12, 0.86); }
+
+  .exit[open] { animation: exit-in 180ms ease-out; }
+  .exit[open]::backdrop { animation: exit-fade 180ms ease-out; }
+
+  @keyframes exit-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.985); }
+  }
+
+  @keyframes exit-fade {
+    from { opacity: 0; }
+  }
+
+  /* Objetivo táctil de 44px con aspa de 14: el área de cierre nunca se queda
+     corta, que es lo que convierte un aviso en una encerrona. */
+  .exit-close {
+    position: absolute;
+    inset-inline-end: 0.5rem;
+    top: 0.5rem;
+    z-index: 2;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    display: grid;
+    place-content: center;
+  }
+
+  .exit-close span {
+    grid-area: 1 / 1;
+    display: block;
+    inline-size: 0.875rem;
+    block-size: 1.5px;
+    background: var(--color-muted-2);
+    transition: background-color 0.15s ease;
+  }
+
+  .exit-close:hover span { background: var(--color-paper); }
+  .exit-close span:first-child { transform: rotate(45deg); }
+  .exit-close span:last-child { transform: rotate(-45deg); }
+
+  .exit-logo {
+    display: block;
+    block-size: 1.5rem;
+    inline-size: auto;
+    margin-bottom: 1.25rem;
+  }
+
+  .exit-title {
+    font-size: clamp(1.5rem, 6vw, 1.875rem);
+    max-width: 14ch;
+  }
+
+  .exit-sub {
+    margin: 0.75rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-muted-2);
+  }
+
+  .exit-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin: 1.125rem 0;
+    padding-block: 0.75rem;
+    border-block: 1px solid var(--color-line-ink);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .exit-later {
+    display: block;
+    inline-size: 100%;
+    margin-top: 0.625rem;
+    padding: 0.5rem;
+    background: none;
+    border: 0;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+
+  .exit-later:hover { color: var(--color-paper); }
+
+  .exit-terms {
+    margin: 0.875rem 0 0;
+    font-size: 0.625rem;
+    line-height: 1.45;
+    color: var(--color-muted);
+  }
+</style>
+
+<script>
+  const modal = document.getElementById('exit-modal') as HTMLDialogElement | null;
+  const KEY = 'exness-exit-shown';
+
+  /** Días que se respeta el «no» del visitante antes de volver a mostrarlo. */
+  const COOLDOWN_DAYS = 14;
+  /** Tiempo mínimo en página antes de aceptar una salida por el borde superior. */
+  const LEAVE_DWELL = 7000;
+  /** Tiempo mínimo antes de aceptar el disparo por lectura terminada. */
+  const READ_DWELL = 25000;
+  /** Proporción de página recorrida que consideramos «ya lo ha leído». */
+  const READ_DEPTH = 0.7;
+  /** Pausa sin scroll que confirma que la lectura se ha detenido. */
+  const READ_IDLE = 900;
+
+  const alreadyShown = () => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return false;
+      const ts = Number(raw);
+      if (!Number.isFinite(ts)) return true;
+      if (Date.now() - ts > COOLDOWN_DAYS * 86400000) {
+        localStorage.removeItem(KEY);
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  if (modal && !alreadyShown()) {
+    const start = Date.now();
+    let fired = false;
+
+    const elapsed = () => Date.now() - start;
+
+    // El aviso de cookies ocupa la franja inferior: apilar el modal encima
+    // obliga a decidir dos cosas a la vez.
+    const consentOpen = () => {
+      const banner = document.getElementById('consent');
+      return Boolean(banner && !banner.hidden);
+    };
+
+    const open = (trigger: 'salida' | 'lectura') => {
+      if (fired || modal.open || consentOpen()) return;
+      fired = true;
+      try {
+        localStorage.setItem(KEY, String(Date.now()));
+      } catch {
+        /* Modo privado: se muestra igual, sin recordarlo. */
+      }
+
+      if (trigger === 'salida') {
+        const title = document.getElementById('exit-title');
+        const sub = document.getElementById('exit-sub');
+        if (title && modal.dataset.titleLeave) title.textContent = modal.dataset.titleLeave;
+        if (sub && modal.dataset.subLeave) sub.textContent = modal.dataset.subLeave;
+      }
+
+      modal.showModal();
+      window.xmTrack?.('exit_intent', { trigger });
+    };
+
+    // Salida real: sólo con puntero, cuando el cursor cruza el borde superior
+    // de la ventana camino de la barra de direcciones, las pestañas o el aspa.
+    if (window.matchMedia('(hover: hover)').matches) {
+      document.addEventListener('mouseout', (event) => {
+        const e = event as MouseEvent;
+        if (e.relatedTarget || e.clientY > 0) return;
+        if (elapsed() < LEAVE_DWELL) return;
+        open('salida');
+      });
+    }
+
+    // Móvil y escritorio: ha llegado al final del contenido y ha dejado de
+    // hacer scroll. No se está yendo, así que el titular es el de continuidad.
+    let idle: ReturnType<typeof setTimeout>;
+    window.addEventListener(
+      'scroll',
+      () => {
+        clearTimeout(idle);
+        idle = setTimeout(() => {
+          const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+          if (scrollable <= 0) return;
+          if (elapsed() < READ_DWELL) return;
+          if (window.scrollY / scrollable < READ_DEPTH) return;
+          open('lectura');
+        }, READ_IDLE);
+      },
+      { passive: true },
+    );
+
+    // Tercera vía de cierre, además de los dos botones nativos y de Escape:
+    // pulsar fuera de la caja. Se compara contra el rectángulo del diálogo
+    // porque el clic en el fondo tiene como destino el propio <dialog>.
+    modal.addEventListener('click', (event) => {
+      // Sólo el fondo: un clic en el contenido tiene como destino un hijo.
+      if (event.target !== modal) return;
+      const box = modal.getBoundingClientRect();
+      const outside =
+        event.clientX < box.left ||
+        event.clientX > box.right ||
+        event.clientY < box.top ||
+        event.clientY > box.bottom;
+      if (outside) modal.close();
+    });
+  }
+</script>

@@ -1,0 +1,267 @@
+---
+import {
+  bannerRotation,
+  type BannerFormat, type PartnerBanner,
+} from '../config/affiliate';
+
+interface Props {
+  /** 300x250 para huecos dentro del contenido, 120x600 para el raíl lateral */
+  format?: BannerFormat;
+  /**
+   * Identifica el hueco: ruta de la página + posición. Decide qué creatividad
+   * abre la rotación, así que dos huecos distintos nunca muestran lo mismo.
+   */
+  seed?: string;
+  /** Cuántas creatividades entran en la rotación de este hueco */
+  count?: number;
+  /** Filete superior e inferior para integrarlo en la retícula editorial */
+  ruled?: boolean;
+  /**
+   * Segunda creatividad al lado de la primera. Sólo aparece a partir de 48rem:
+   * en móvil un rectángulo ya ocupa media pantalla y dos seguidos harían la
+   * página más lenta y más pesada sin ganar un solo clic.
+   */
+  double?: boolean;
+}
+
+const {
+  format = 'rectangle',
+  seed = 'default',
+  count = 4,
+  ruled = true,
+  double = false,
+} = Astro.props;
+
+/** Baraja del hueco. La del acompañante arranca en otro punto de la lista. */
+const decks: PartnerBanner[][] = [bannerRotation(format, seed, count)];
+if (double) decks.push(bannerRotation(format, `${seed}:b`, count));
+
+/** La lista viaja en el HTML para que el cliente no tenga que pedirla. */
+const payload = (deck: PartnerBanner[]) =>
+  JSON.stringify(deck.map((b) => ({ h: b.href, s: b.img })));
+
+const slots = decks
+  .map((deck) => ({ first: deck[0], data: payload(deck) }))
+  .filter((slot) => slot.first);
+---
+
+{slots.length > 0 && (
+<div
+  class:list={[
+    'banner-rack',
+    double && 'banner-rack-double',
+    double && ruled && 'banner-rack-ruled',
+  ]}
+>
+  {slots.map((slot, i) => (
+    <div
+      class:list={[
+        'banner-slot',
+        `banner-${format}`,
+        ruled && !double && 'banner-slot-ruled',
+        i > 0 && 'banner-slot-extra',
+      ]}
+    >
+      <p class="banner-label mono">Publicidad</p>
+      <a
+        href={slot.first.href}
+        class="banner-link"
+        rel="sponsored nofollow noopener"
+        target="_blank"
+        referrerpolicy="no-referrer-when-downgrade"
+        data-banner={slot.data}
+        data-cta={`banner-${format}`}
+        aria-label="Abrir cuenta en Exness"
+      >
+        <img
+          src={slot.first.img}
+          width={slot.first.width}
+          height={slot.first.height}
+          alt="Exness · bróker de forex y CFD"
+          loading="lazy"
+          decoding="async"
+          referrerpolicy="no-referrer-when-downgrade"
+        />
+      </a>
+    </div>
+  ))}
+</div>
+)}
+
+<script>
+  /**
+   * Rotación en cliente.
+   *
+   * El sitio es estático, así que la primera creatividad la fija el build.
+   * A partir de ahí este script va pasando por el resto de la baraja.
+   *
+   * Dos condiciones, y las dos importan: sólo rota mientras el hueco está a
+   * la vista —un banner que rota en el pie sin que nadie lo mire quema
+   * impresiones y ancho de banda— y no rota nunca si el visitante ha pedido
+   * movimiento reducido en el sistema.
+   */
+  const CADENCE = 9_000;
+
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!still) {
+    document.querySelectorAll<HTMLAnchorElement>('[data-banner]').forEach((slot) => {
+      let deck: Array<{ h: string; s: string }>;
+
+      try {
+        deck = JSON.parse(slot.dataset.banner ?? '[]');
+      } catch {
+        return;
+      }
+
+      const img = slot.querySelector('img');
+      if (!img || deck.length < 2) return;
+
+      let index = 0;
+      let timer: number | undefined;
+      let warmed = false;
+
+      // Precarga silenciosa: al cambiar el src la imagen ya está en caché y el
+      // hueco no parpadea. Se hace al entrar en pantalla, no al cargar: con
+      // varios huecos por página, precargarlo todo de golpe —incluidos los que
+      // el móvil ni siquiera muestra— serían megas tirados a la basura.
+      const warm = () => {
+        if (warmed) return;
+        warmed = true;
+        deck.slice(1).forEach((creative) => {
+          const pre = new Image();
+          pre.src = creative.s;
+        });
+      };
+
+      const advance = () => {
+        index = (index + 1) % deck.length;
+        slot.href = deck[index].h;
+        img.src = deck[index].s;
+      };
+
+      const watcher = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting && timer === undefined) {
+            warm();
+            timer = window.setInterval(advance, CADENCE);
+          } else if (!entry.isIntersecting && timer !== undefined) {
+            window.clearInterval(timer);
+            timer = undefined;
+          }
+        },
+        { threshold: 0.35 },
+      );
+
+      watcher.observe(slot);
+    });
+  }
+</script>
+
+<style>
+  .banner-rack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* El acompañante sólo existe cuando hay ancho para ponerlo al lado. */
+  .banner-slot-extra { display: none; }
+
+  @media (min-width: 48rem) {
+    .banner-rack-double {
+      flex-direction: row;
+      justify-content: center;
+      gap: clamp(1.5rem, 4vw, 3.5rem);
+    }
+
+    .banner-rack-double .banner-slot { flex: none; }
+    .banner-slot-extra { display: flex; }
+  }
+
+  .banner-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.625rem;
+    padding-block: 1.75rem;
+  }
+
+  .banner-slot-ruled,
+  .banner-rack-ruled {
+    border-block: 1px solid var(--color-line-ink);
+  }
+
+  :global(.band-paper) .banner-slot-ruled,
+  :global(.band-paper-2) .banner-slot-ruled,
+  :global(.band-paper) .banner-rack-ruled,
+  :global(.band-paper-2) .banner-rack-ruled {
+    border-block-color: var(--color-line);
+  }
+
+  /*
+    La etiqueta no es decorativa: separar publicidad de contenido editorial es
+    lo que sostiene la credibilidad del resto de la página.
+  */
+  .banner-label {
+    margin: 0;
+    font-size: 0.5625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.45;
+  }
+
+  .banner-link {
+    display: block;
+    line-height: 0;
+  }
+
+  /* Reserva del hueco: sin esto, cada banner empuja el texto al cargar. */
+  .banner-rectangle .banner-link {
+    width: 300px;
+    height: 250px;
+  }
+
+  .banner-skyscraper .banner-link {
+    width: 120px;
+    height: 600px;
+  }
+
+  /*
+    Tiras horizontales. Cada una sólo aparece donde cabe entera: la de 728px
+    necesita 48rem de ventana, y por debajo de eso manda la de 320px. Así la
+    misma posición sirve en escritorio y en móvil sin encoger la creatividad,
+    que en publicidad de terceros deforma el texto del anuncio.
+  */
+  .banner-leaderboard .banner-link {
+    width: 728px;
+    height: 90px;
+  }
+
+  .banner-mobilebar .banner-link {
+    width: 320px;
+    height: 100px;
+  }
+
+  .banner-leaderboard { display: none; }
+
+  @media (min-width: 48rem) {
+    .banner-leaderboard { display: flex; }
+    .banner-mobilebar { display: none; }
+  }
+
+  .banner-link img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  @media (max-width: 20.5rem) {
+    .banner-rectangle .banner-link {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 300 / 250;
+    }
+  }
+</style>

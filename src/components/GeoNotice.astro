@@ -1,0 +1,266 @@
+---
+import { COUNTRIES } from '../config/countries';
+import { BLOCKED_COUNTRIES } from '../config/offers';
+import { useT, countryPath } from '../i18n/ui';
+
+interface Props {
+  /** Código del país que ya se está mostrando, para no sugerirse a sí mismo */
+  currentCountry?: string;
+}
+
+const { currentCountry } = Astro.props;
+const t = useT();
+
+/** Mapa mínimo país -> {nombre, url} que se serializa al cliente. */
+const map = Object.fromEntries(
+  COUNTRIES.map((c) => [
+    c.code.toUpperCase(),
+    { n: c.name, u: countryPath(c.code) },
+  ]),
+);
+
+/**
+ * `t()` resuelve {country} con el país de la página, y aquí ese país es
+ * justamente el que no se conoce todavía: lo averigua el cliente. Sin esto,
+ * t() sustituiría el marcador por la cadena vacía en tiempo de compilación y
+ * el aviso saldría con el hueco en blanco ("Parece que estás en ."). Pasarle
+ * el propio marcador como valor lo deja intacto hasta el navegador.
+ */
+const KEEP_COUNTRY = { country: '{country}' };
+
+const data = {
+  map,
+  current: currentCountry?.toUpperCase() ?? '',
+  blocked: BLOCKED_COUNTRIES,
+  suggest: t('geo.suggest', KEEP_COUNTRY),
+  suggestShort: t('geo.suggestShort', KEEP_COUNTRY),
+  go: t('geo.go', KEEP_COUNTRY),
+  stay: t('geo.stay'),
+};
+---
+
+<div class="geo on-ink" id="geo-notice" hidden>
+  <div class="wrap geo-inner">
+    <p class="geo-text" id="geo-text"></p>
+    <p class="geo-text geo-text-short" id="geo-text-short"></p>
+    <div class="geo-actions">
+      <a class="btn btn-accent geo-go" id="geo-go" href="/">{t('geo.go', { country: '' })}</a>
+      <button class="btn btn-ghost geo-stay" type="button" id="geo-stay">{t('geo.stay')}</button>
+    </div>
+  </div>
+</div>
+
+<script type="application/json" id="geo-data" is:inline set:html={JSON.stringify(data)}></script>
+
+<style>
+  .geo {
+    position: fixed;
+    inset-inline: 0;
+    top: 4.25rem;
+    z-index: 45;
+    background: var(--color-ink-2);
+    border-block: 1px solid var(--color-line-ink);
+    border-top-color: var(--color-accent);
+    border-top-width: 2px;
+    padding-block: 0.5rem;
+  }
+
+  /*
+    En móvil la barra iba a tres alturas —texto, y debajo los dos botones— y se
+    comía la primera pantalla entera justo debajo de la cabecera. Aquí es una
+    sola línea: mensaje corto, botón, y el «seguir aquí» reducido a un aspa.
+    A partir de 40rem hay sitio para la frase completa y los dos botones.
+  */
+  .geo-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .geo-text {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-paper);
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .geo-text { display: none; }
+  .geo-text-short { display: block; }
+
+  .geo-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+  }
+
+  .geo-actions .btn {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* El aspa. Va con `.geo-actions` delante para ganarle en especificidad a la
+     regla de los botones de arriba, que si no le devuelve padding y letra. */
+  .geo-actions .geo-stay {
+    position: relative;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-muted-2);
+    font-size: 0;
+    cursor: pointer;
+    flex: none;
+  }
+
+  .geo-actions .geo-stay::before,
+  .geo-actions .geo-stay::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: 50%;
+    top: 50%;
+    inline-size: 0.75rem;
+    block-size: 1.5px;
+    margin-inline-start: -0.375rem;
+    background: currentColor;
+  }
+
+  .geo-actions .geo-stay::before { transform: rotate(45deg); }
+  .geo-actions .geo-stay::after { transform: rotate(-45deg); }
+  .geo-actions .geo-stay:hover { color: var(--color-paper); }
+
+  @media (min-width: 40rem) {
+    .geo { padding-block: 0.875rem; }
+    .geo-text { display: block; white-space: normal; overflow: visible; }
+    .geo-text-short { display: none; }
+
+    .geo-actions .btn {
+      padding: 0.625rem 1.125rem;
+      font-size: 0.8125rem;
+    }
+
+    /* En escritorio vuelve a ser un botón con texto, no un aspa. */
+    .geo-actions .geo-stay {
+      inline-size: auto;
+      block-size: auto;
+      padding: 0.625rem 1.125rem;
+      font-size: 0.8125rem;
+      border: 1px solid var(--color-line-ink);
+    }
+
+    .geo-actions .geo-stay::before,
+    .geo-actions .geo-stay::after { content: none; }
+  }
+</style>
+
+<script>
+  interface GeoEntry { n: string; u: string }
+  interface GeoData {
+    map: Record<string, GeoEntry>;
+    current: string;
+    blocked: string[];
+    suggest: string;
+    suggestShort: string;
+    go: string;
+    stay: string;
+  }
+
+  const raw = document.getElementById('geo-data')?.textContent;
+  const el = document.getElementById('geo-notice');
+  /** «Seguir aquí»: la decisión dura un mes, no una sesión. */
+  const KEY = 'exness-geo-dismissed';
+  const DISMISS_DAYS = 30;
+
+  const read = (key: string) => {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+
+  const write = (key: string, value: string) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      /* Modo privado: la decisión dura lo que la pestaña. */
+    }
+  };
+
+  const dismissed = () => {
+    const raw_ = read(KEY);
+    if (!raw_) return false;
+    const ts = Number(raw_);
+    if (!Number.isFinite(ts)) return true;
+    return Date.now() - ts < DISMISS_DAYS * 86400000;
+  };
+
+  /**
+   * Si ya eligió mercado a mano, su decisión pesa más que la IP: sugerirle otro
+   * país en cada visita es discutirle algo que ya resolvió.
+   */
+  const picked = Boolean(read('exness-country-pick'));
+
+  if (raw && el && !picked && !dismissed()) {
+    const data: GeoData = JSON.parse(raw);
+
+    // Cloudflare expone el país del visitante en /cdn-cgi/trace sin coste
+    // ni dependencias externas. Si el sitio no está tras Cloudflare, la
+    // petición falla y simplemente no se muestra nada.
+    fetch('/cdn-cgi/trace', { cache: 'no-store' })
+      .then((r) => (r.ok ? r.text() : Promise.reject()))
+      .then((text) => {
+        const loc = /^loc=(\w{2})$/m.exec(text)?.[1];
+        if (!loc) return;
+
+        if (data.blocked.includes(loc)) {
+          document.documentElement.dataset.blockedRegion = loc;
+          return;
+        }
+
+        const target = data.map[loc];
+        if (!target || loc === data.current) return;
+
+        /*
+          Y tampoco si el mercado que recuerda el navegador ya es ese. Aquí
+          estaba el fallo: quien aceptaba el aviso y se iba a /mx/ volvía a
+          verlo en cuanto abría el blog o cambiaba de pestaña, porque esas
+          páginas se compilan sin país y el aviso sólo miraba la URL. La
+          memoria de mercado sabe que ya está donde tenía que estar.
+        */
+        if (read('exness-country')?.toLowerCase() === loc.toLowerCase()) return;
+
+        const long = document.getElementById('geo-text');
+        const short = document.getElementById('geo-text-short');
+        const go = document.getElementById('geo-go') as HTMLAnchorElement | null;
+        if (!long || !short || !go) return;
+
+        // split/join en vez de replace: sustituye todas las apariciones y no
+        // interpreta los "$" que pueda traer un nombre de país.
+        const fill = (tpl: string) => tpl.split('{country}').join(target.n);
+
+        long.textContent = fill(data.suggest);
+        short.textContent = fill(data.suggestShort);
+        go.textContent = fill(data.go);
+        go.href = target.u;
+        // Aceptar la sugerencia es elegir mercado: CountryMemory lo recuerda al
+        // vuelo con este marcador y el aviso no vuelve a aparecer.
+        go.dataset.marketPick = loc.toLowerCase();
+        el.hidden = false;
+
+        window.xmTrack?.('geo_suggest', { country: loc });
+      })
+      .catch(() => {});
+
+    document.getElementById('geo-stay')?.addEventListener('click', () => {
+      el.hidden = true;
+      write(KEY, String(Date.now()));
+    });
+  }
+</script>

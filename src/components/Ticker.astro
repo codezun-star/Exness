@@ -1,0 +1,73 @@
+---
+import { STATS } from '../config/offers';
+import { countryEntity, type Country } from '../config/countries';
+import { useT, DEFAULT_ENTITY } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+/*
+  Sin país —la portada— manda la entidad por defecto, no un literal. Aquí
+  había un '1:1000' escrito a mano que sobrevivía a cualquier cambio de
+  offers.ts: la cinta anunciaba un apalancamiento que ya no era el de ninguna
+  entidad del bróker.
+*/
+const entity = country ? countryEntity(country) : DEFAULT_ENTITY;
+
+const items = [
+  `${t('trust.deposit')} ${STATS.minDeposit} USD`,
+  `${t('stats.instruments')} ${STATS.instruments}`,
+  `${t('trust.leverage')} ${entity.maxLeverage}`,
+  `${t('trust.execution')} ${STATS.executionSpeed}`,
+  `${t('trust.nbp')}`,
+  `${t('stats.countries')} ${STATS.countries}`,
+  `${t('trust.support')} 24/7`,
+];
+
+/**
+ * La lista va dos veces, en dos grupos idénticos. La animación desplaza
+ * exactamente la mitad de la pista, así que al terminar el primer grupo el
+ * segundo está justo donde estaba el primero y el bucle no se nota.
+ *
+ * El detalle que fallaba: los grupos eran un único flujo de spans, y en una
+ * pantalla ancha los siete datos no llegaban a cubrirla. A mitad del ciclo se
+ * veía una franja roja vacía que luego pegaba un salto — el efecto de "se está
+ * cargando". Con `min-inline-size: 100vw` en cada grupo eso no puede pasar:
+ * el grupo nunca mide menos que la ventana, sea cual sea el ancho.
+ */
+const groups = [items, items];
+---
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    {groups.map((group) => (
+      <div class="ticker-group">
+        {group.map((item) => (
+          <span class="ticker-item">
+            <span class="ticker-dot"></span>
+            {item}
+          </span>
+        ))}
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: none;
+  }
+
+  .ticker-dot {
+    inline-size: 5px;
+    block-size: 5px;
+    background: currentColor;
+    flex: none;
+  }
+</style>

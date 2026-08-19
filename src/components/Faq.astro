@@ -1,0 +1,48 @@
+---
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+export interface QA {
+  q: string;
+  a: string;
+}
+
+interface Props {
+  country?: Country;
+  /** Permite inyectar preguntas específicas de un país o artículo */
+  items?: QA[];
+}
+
+const { country, items } = Astro.props;
+const t = useT(country);
+
+/** Estructura pensada para AEO: pregunta literal + respuesta completa
+ *  y autónoma en el primer párrafo, sin depender del contexto anterior. */
+const qas: QA[] = items ?? [1, 2, 3, 4, 5, 6].map((n) => ({
+  q: t(`faq.q${n}` as never),
+  a: t(`faq.a${n}` as never),
+}));
+---
+
+<section class="band band-paper-2" id="faq">
+  <div class="wrap">
+    <p class="eyebrow">{t('nav.faq')}</p>
+    <h2 class="display display-l faq-title">{t('faq.title')}</h2>
+    <p class="lede faq-lede">{t('faq.sub')}</p>
+
+    <div class="faq-list">
+      {qas.map((qa, i) => (
+        <details class="qa" open={i === 0}>
+          <summary>{qa.q}</summary>
+          <div class="qa-body">{qa.a}</div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq-title { max-width: 18ch; margin-bottom: 1.25rem; }
+  .faq-lede { margin: 0 0 clamp(2rem, 4vw, 3rem); }
+  .faq-list { border-top: 1px solid var(--color-line); }
+</style>

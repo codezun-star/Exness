@@ -1,0 +1,212 @@
+---
+import CountrySwitcher from './CountrySwitcher.astro';
+import { SITE, BRAND } from '../config/site';
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT, countryPath, blogPath } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/** En una página de país, "inicio" es ese país. Fuera de él, el selector. */
+const home = country ? countryPath(country.code) : '/';
+
+/**
+ * Fuera de una landing de mercado, estos enlaces nacen apuntando a la portada
+ * y CountryMemory les antepone el mercado recordado en el navegador
+ * ("/#cuentas" -> "/hn/#cuentas"). El marcador sólo se pone cuando hace
+ * falta: en una página de país el enlace ya lleva el mercado correcto.
+ */
+const market = country ? undefined : true;
+
+const nav = [
+  { label: t('nav.accounts'), href: `${home}#cuentas`, market },
+  { label: t('nav.platforms'), href: `${home}#plataformas`, market },
+  // "Países" es la única entrada que no se reescribe: fuera de una landing
+  // lleva a la portada, que es donde está la retícula de mercados.
+  { label: t('nav.countries'), href: country ? `${home}#paises` : '/' },
+  { label: t('nav.blog'), href: blogPath() },
+  { label: t('nav.faq'), href: `${home}#faq`, market },
+];
+---
+
+<header class="site-header on-ink">
+  <div class="wrap site-header-inner">
+    <a href={home} class="wordmark" data-market-link={market} aria-label={SITE.brand}>
+      <img
+        src={BRAND.lockup.src}
+        width={BRAND.lockup.width}
+        height={BRAND.lockup.height}
+        alt={SITE.brand}
+        decoding="async"
+        fetchpriority="high"
+      />
+    </a>
+
+    <nav class="site-nav" aria-label={t('nav.menu')}>
+      {nav.map((item) => (
+        <a href={item.href} data-market-link={item.market}>{item.label}</a>
+      ))}
+    </nav>
+
+    <div class="site-header-actions">
+      <CountrySwitcher country={country} />
+      <a
+        class="btn btn-accent site-header-cta"
+        href={goUrl('real', 'header', country?.code)}
+        rel="sponsored nofollow noopener"
+        data-cta="header"
+      >{t('nav.cta')}</a>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label={t('nav.menu')}>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobile-nav" hidden>
+    <div class="wrap">
+      <nav aria-label={t('nav.menu')}>
+        <ul class="linklist">
+          {nav.map((item) => (
+            <li><a href={item.href} data-market-link={item.market}>{item.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <a
+        class="btn btn-accent btn-block mobile-nav-cta"
+        href={goUrl('real', 'mobile-nav', country?.code)}
+        rel="sponsored nofollow noopener"
+        data-cta="mobile-nav"
+      >{t('nav.cta')}</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(11, 11, 12, 0.92);
+    backdrop-filter: saturate(140%) blur(12px);
+    border-bottom: 1px solid var(--color-line-ink);
+    color: var(--color-paper);
+  }
+
+  .site-header-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    min-block-size: 4.25rem;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    flex: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .wordmark:hover { opacity: 0.78; }
+
+  .wordmark img {
+    display: block;
+    block-size: 1.75rem;
+    inline-size: auto;
+  }
+
+  @media (min-width: 30rem) {
+    .wordmark img { block-size: 2rem; }
+  }
+
+  .site-nav {
+    display: none;
+    align-items: center;
+    gap: 1.75rem;
+    margin-inline-start: auto;
+  }
+
+  .site-nav a {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--color-muted-2);
+    transition: color 0.15s ease;
+  }
+
+  .site-nav a:hover { color: var(--color-paper); }
+
+  .site-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-inline-start: auto;
+  }
+
+  .site-header-cta {
+    display: none;
+    padding: 0.75rem 1.375rem;
+    font-size: 0.8125rem;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    padding: 0 0.5rem;
+    background: none;
+    border: 1px solid var(--color-line-ink);
+    cursor: pointer;
+  }
+
+  .nav-toggle span {
+    display: block;
+    block-size: 1.5px;
+    background: var(--color-paper);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .nav-toggle[aria-expanded='true'] span:first-child {
+    transform: translateY(3.25px) rotate(45deg);
+  }
+
+  .nav-toggle[aria-expanded='true'] span:last-child {
+    transform: translateY(-3.25px) rotate(-45deg);
+  }
+
+  .mobile-nav {
+    border-top: 1px solid var(--color-line-ink);
+    padding-block: 1.25rem 1.75rem;
+    background: var(--color-ink);
+  }
+
+  .mobile-nav-cta { margin-top: 1.5rem; }
+
+  @media (min-width: 64rem) {
+    .site-nav { display: flex; }
+    .site-header-actions { margin-inline-start: 0; }
+    .site-header-cta { display: inline-flex; }
+    .nav-toggle { display: none; }
+    .mobile-nav { display: none !important; }
+  }
+</style>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.nav-toggle');
+  const panel = document.getElementById('mobile-nav');
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    if (panel) panel.hidden = open;
+  });
+</script>

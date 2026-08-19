@@ -1,0 +1,56 @@
+---
+import type { Country } from '../config/countries';
+import { useT, type UIKey } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+const items = [1, 2, 3, 4, 5, 6].map((n) => ({
+  n: String(n).padStart(2, '0'),
+  title: t(`why.${n}.t` as UIKey),
+  text: t(`why.${n}.d` as UIKey),
+}));
+---
+
+<section class="band band-paper-2" id="por-que">
+  <div class="wrap">
+    <p class="eyebrow">{t('trust.regulated')}</p>
+    <h2 class="display display-l why-title">{t('why.title')}</h2>
+    <p class="lede why-lede">{t('why.sub')}</p>
+
+    <div class="datagrid datagrid-3 why-grid">
+      {items.map((item) => (
+        <article>
+          <span class="idx" aria-hidden="true">{item.n}</span>
+          <h3 class="why-item-title">{item.title}</h3>
+          <p class="why-item-text">{item.text}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .why-title { max-width: 18ch; margin-bottom: 1.25rem; }
+  .why-lede { margin: 0 0 clamp(2.5rem, 5vw, 4rem); }
+
+  .why-item-title {
+    font-size: 1.1875rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    margin: 0 0 0.75rem;
+  }
+
+  .why-item-text {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--color-muted);
+    max-width: 42ch;
+  }
+</style>

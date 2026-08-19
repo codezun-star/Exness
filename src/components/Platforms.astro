@@ -1,0 +1,97 @@
+---
+import { PLATFORMS } from '../config/offers';
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+---
+
+<section class="band band-paper-2" id="plataformas">
+  <div class="wrap platforms-head">
+    <div>
+      <p class="eyebrow">{t('nav.platforms')}</p>
+      <h2 class="display display-l platforms-title">{t('platforms.title')}</h2>
+      <p class="lede">{t('platforms.sub')}</p>
+    </div>
+    <a
+      class="btn btn-ghost platforms-cta"
+      href={goUrl('app', 'platforms', country?.code)}
+      rel="sponsored nofollow noopener"
+      data-cta="platforms"
+    >{t('platforms.cta')}</a>
+  </div>
+
+  <div class="wrap">
+    <ul class="platform-list">
+      {PLATFORMS.map((platform, i) => (
+        <li class="platform-row">
+          <span class="platform-idx mono">{String(i + 1).padStart(2, '0')}</span>
+          <span class="platform-name">{platform.name}</span>
+          <span class="platform-os">{platform.os}</span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .platforms-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    padding-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .platforms-title { max-width: 14ch; margin-bottom: 1.25rem; }
+  .platforms-cta { flex: none; }
+
+  .platform-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .platform-row {
+    display: grid;
+    grid-template-columns: 2.75rem 1fr;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+    padding-block: 1.375rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  @media (min-width: 48rem) {
+    .platform-row { grid-template-columns: 3.5rem minmax(12rem, 1fr) 2fr; }
+  }
+
+  .platform-idx {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-accent-ink);
+  }
+
+  .platform-name {
+    font-size: clamp(1.125rem, 2vw, 1.5rem);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  .platform-os {
+    grid-column: 2;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  @media (min-width: 48rem) {
+    .platform-os { grid-column: 3; text-align: end; }
+  }
+</style>

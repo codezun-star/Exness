@@ -1,0 +1,188 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE } from '../../config/site';
+import { ENTITIES } from '../../config/offers';
+import { PARTNER_CODE } from '../../config/affiliate';
+import { LEGAL_PAGES, type LegalPage } from '../../config/legal';
+import { useT, legalPath, type UIKey } from '../../i18n/ui';
+import { abs } from '../../lib/seo';
+import { graph, organization, website, webPage, breadcrumbs } from '../../lib/schema';
+
+export function getStaticPaths() {
+  return LEGAL_PAGES.map((page) => ({ params: { page } }));
+}
+
+const { page } = Astro.params;
+const key = page as LegalPage;
+const t = useT();
+
+const titleKey: Record<LegalPage, UIKey> = {
+  risk: 'legal.risk',
+  affiliate: 'legal.affiliate',
+  privacy: 'legal.privacy',
+  terms: 'legal.terms',
+  cookies: 'legal.cookies',
+};
+
+const title = t(titleKey[key]);
+
+/** Una descripción propia por documento: antes las cinco compartían la misma. */
+const descKey: Record<LegalPage, UIKey> = {
+  risk: 'seo.legal.risk',
+  affiliate: 'seo.legal.affiliate',
+  privacy: 'seo.legal.privacy',
+  terms: 'seo.legal.terms',
+  cookies: 'seo.legal.cookies',
+};
+const description = t(descKey[key]);
+const url = legalPath(key).replace(/^\/|\/$/g, '');
+
+/** Cada bloque es {título opcional, párrafos, lista opcional}. */
+type Block = { heading?: string; paragraphs?: string[]; items?: string[] };
+
+const entities = Object.values(ENTITIES).map(
+  (e) => `${e.legalName} — ${e.regulator} (${e.license}) · ${e.maxLeverage}`,
+);
+
+const blocks: Record<LegalPage, Block[]> = {
+  risk: [
+    { paragraphs: [t('risk.full')] },
+    {
+      heading: t('country.entity'),
+      paragraphs: [t('faq.a1')],
+      items: entities,
+    },
+    { heading: t('faq.q4'), paragraphs: [t('faq.a4')] },
+  ],
+  affiliate: [
+    { paragraphs: [t('footer.disclosureText'), t('footer.aboutText')] },
+    {
+      heading: SITE.brand,
+      items: [
+        `${t('nav.cta')}: ${PARTNER_CODE}`,
+        `${t('footer.risk')}: ${t('risk.short')}`,
+      ],
+    },
+    { paragraphs: [t('cta.note')] },
+  ],
+  privacy: [
+    { paragraphs: [t('consent.text')] },
+    {
+      heading: t('legal.cookies'),
+      items: [
+        'Google Analytics 4 / Google Tag Manager',
+        'Meta Pixel',
+        'TikTok Pixel',
+        'Microsoft Clarity',
+      ],
+    },
+    { paragraphs: [`${SITE.email}`] },
+  ],
+  terms: [
+    { paragraphs: [t('footer.aboutText'), t('risk.full')] },
+    { heading: t('footer.disclosure'), paragraphs: [t('footer.disclosureText')] },
+  ],
+  cookies: [
+    { paragraphs: [t('consent.text')] },
+    {
+      heading: t('legal.cookies'),
+      items: [
+        'exness-consent — localStorage — 12 meses',
+        'exness-exit-shown — localStorage — 12 meses',
+        'exness-geo-dismissed — sessionStorage — sesión',
+      ],
+    },
+    { paragraphs: [t('footer.disclosureText')] },
+  ],
+};
+
+const schema = graph(
+  organization(),
+  website(),
+  webPage({ url: abs(url), title, description }),
+  breadcrumbs([
+    { name: t('nav.home'), path: '' },
+    { name: title, path: url },
+  ]),
+);
+---
+
+<Base
+ 
+  title={title}
+  description={description}
+  path={url}
+  theme="paper"
+  schema={schema}
+  bare
+>
+  <section class="band band-paper legal">
+    <div class="wrap-narrow">
+      <p class="eyebrow">{t('footer.legal')}</p>
+      <h1 class="display display-l legal-title">{title}</h1>
+
+      {blocks[key].map((block) => (
+        <div class="legal-block">
+          {block.heading && <h2 class="legal-heading">{block.heading}</h2>}
+          {block.paragraphs?.map((p) => <p class="legal-text">{p}</p>)}
+          {block.items && (
+            <ul class="legal-list">
+              {block.items.map((item) => <li class="mono">{item}</li>)}
+            </ul>
+          )}
+        </div>
+      ))}
+
+      <p class="legal-updated mono">
+        {t('blog.updated')} {new Date().toISOString().slice(0, 10)}
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .legal-title { max-width: 18ch; margin-bottom: 2.5rem; }
+
+  .legal-block {
+    padding-block: 2rem;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .legal-heading {
+    font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    margin: 0 0 1rem;
+  }
+
+  .legal-text {
+    margin: 0 0 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+    max-width: 68ch;
+  }
+
+  .legal-text:last-child { margin-bottom: 0; }
+
+  .legal-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+  }
+
+  .legal-list li {
+    padding-block: 0.625rem;
+    border-bottom: 1px solid var(--color-line);
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  .legal-updated {
+    margin-top: 2.5rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+</style>

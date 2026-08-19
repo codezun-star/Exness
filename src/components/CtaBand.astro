@@ -1,0 +1,56 @@
+---
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+  source?: string;
+}
+
+const { country, source = 'cta-band' } = Astro.props;
+const t = useT(country);
+---
+
+<section class="band band-accent cta-band">
+  <div class="wrap">
+    <p class="display display-l cta-band-title">{t('cta.title')}</p>
+    <p class="cta-band-sub">{t('cta.sub')}</p>
+
+    <a
+      class="btn btn-invert cta-band-btn"
+      href={goUrl('real', source, country?.code)}
+      rel="sponsored nofollow noopener"
+      data-cta={source}
+    >{t('cta.button')}</a>
+
+    <p class="cta-band-note">{t('cta.note')}</p>
+  </div>
+</section>
+
+<style>
+  .cta-band { text-align: center; }
+
+  .cta-band-title {
+    max-width: 18ch;
+    margin-inline: auto;
+    margin-bottom: 1.25rem;
+  }
+
+  .cta-band-sub {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    line-height: 1.5;
+    max-width: 48ch;
+    margin: 0 auto 2.25rem;
+  }
+
+  .cta-band-btn { padding-inline: 3rem; }
+
+  .cta-band-note {
+    margin: 1.75rem auto 0;
+    font-size: 0.6875rem;
+    line-height: 1.55;
+    max-width: 58ch;
+    opacity: 0.8;
+  }
+</style>

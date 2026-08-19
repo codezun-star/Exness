@@ -1,0 +1,114 @@
+---
+import '../styles/global.css';
+import { SITE, BRAND } from '../config/site';
+import { COUNTRIES_BY_TIER, countryHreflang } from '../config/countries';
+import { useT, countryPath } from '../i18n/ui';
+import Banner from '../components/Banner.astro';
+
+const t = useT();
+
+/** Los mercados prioritarios: es la salida útil desde una URL rota. */
+const markets = COUNTRIES_BY_TIER.filter((c) => c.tier === 1);
+---
+
+<html lang="es" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 — {SITE.brand}</title>
+    <meta name="robots" content="noindex, follow" />
+    <meta name="theme-color" content={SITE.themeColor} />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon.png" sizes="96x96" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  </head>
+
+  <body data-theme="ink">
+    <main class="nf">
+      <div class="wrap">
+        <a href="/" class="nf-logo" aria-label={SITE.brand}>
+          <img
+            src={BRAND.lockup.src}
+            width={BRAND.lockup.width}
+            height={BRAND.lockup.height}
+            alt={SITE.brand}
+            decoding="async"
+          />
+        </a>
+        <p class="nf-code mono">404</p>
+        <h1 class="display display-l nf-title">{t('404.title')}</h1>
+        <p class="lede nf-lede">{t('404.sub')}</p>
+
+        <a class="btn btn-accent" href="/">{t('404.cta')}</a>
+
+        <div class="nf-langs">
+          <p class="eyebrow">{t('country.label')}</p>
+          <ul class="linklist nf-list">
+            {markets.map((c) => (
+              <li>
+                <a
+                  href={countryPath(c.code)}
+                  hreflang={countryHreflang(c)}
+                >
+                  <span class="code">{c.code.toUpperCase()}</span>
+                  <span>{c.name}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/*
+          Una 404 es tráfico ya perdido: o encuentra salida aquí o se va. El
+          banner es la segunda salida, después de los mercados prioritarios.
+        */}
+        <Banner seed="not-found" />
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  .nf {
+    min-block-size: 100vh;
+    display: flex;
+    align-items: center;
+    padding-block: 4rem;
+  }
+
+  .nf-logo {
+    display: inline-block;
+    margin-bottom: clamp(2rem, 5vw, 3rem);
+  }
+
+  .nf-logo img {
+    display: block;
+    block-size: 2.25rem;
+    inline-size: auto;
+  }
+
+  .nf-code {
+    font-size: clamp(3rem, 10vw, 6rem);
+    font-weight: 800;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    color: var(--color-accent);
+    margin: 0 0 1.5rem;
+  }
+
+  .nf-title { max-width: 14ch; margin-bottom: 1rem; }
+  .nf-lede { margin: 0 0 2rem; }
+
+  .nf-langs {
+    margin-top: 4rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--color-line-ink);
+  }
+
+  .nf-list { columns: 2; column-gap: 2.5rem; }
+
+  @media (min-width: 48rem) { .nf-list { columns: 3; } }
+  @media (min-width: 64rem) { .nf-list { columns: 5; } }
+
+  .nf-list li { break-inside: avoid; }
+</style>

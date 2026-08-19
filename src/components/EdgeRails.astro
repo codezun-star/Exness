@@ -1,0 +1,47 @@
+---
+import Banner from './Banner.astro';
+
+interface Props {
+  /** Identifica la página: decide con qué creatividad abre cada raíl. */
+  seed: string;
+}
+
+const { seed } = Astro.props;
+---
+
+{/*
+  Raíles para las páginas hechas de bandas a sangre —portada, landings de
+  mercado, índice del blog—. Ahí no hay una columna de lectura que estrechar:
+  las bandas van de borde a borde, así que los rascacielos se anclan al margen
+  del viewport, donde a partir de 100rem sobra sitio de verdad.
+
+  100rem no es un número redondo elegido a ojo: el contenido va dentro de
+  .wrap, que mide 84rem como máximo. A 1600px de ventana quedan 128px muertos
+  a cada lado, y el raíl ocupa de 20px a 140px: no roza el texto. Por debajo
+  de ese ancho lo taparía, y ahí el trabajo lo hacen los rectángulos que ya
+  están dentro de las bandas.
+*/}
+<aside class="edge-rail edge-rail-start" aria-hidden="false">
+  <Banner format="skyscraper" seed={`${seed}-izq`} ruled={false} count={5} />
+</aside>
+
+<aside class="edge-rail edge-rail-end">
+  <Banner format="skyscraper" seed={`${seed}-der`} ruled={false} count={5} />
+</aside>
+
+<style>
+  .edge-rail { display: none; }
+
+  @media (min-width: 100rem) and (min-height: 44rem) {
+    .edge-rail {
+      display: block;
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 40;
+    }
+
+    .edge-rail-start { inset-inline-start: 1.25rem; }
+    .edge-rail-end { inset-inline-end: 1.25rem; }
+  }
+</style>

@@ -1,0 +1,53 @@
+---
+import type { Country } from '../config/countries';
+import { localCopy } from '../config/local-copy';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/**
+ * Lo único que una landing puede decir y las demás no. Si un mercado todavía
+ * no tiene texto propio, la sección no se renderiza: mejor ausente que
+ * rellena con la misma plantilla que el resto.
+ */
+const paragraphs = localCopy(country.code);
+---
+
+{paragraphs.length > 0 && (
+  <section class="band band-paper" id="local">
+    <div class="wrap">
+      <p class="eyebrow">{country.name} · {country.currency}</p>
+      <h2 class="display display-m local-title">
+        {t('local.title', { country: country.name })}
+      </h2>
+
+      <div class="local-body">
+        {paragraphs.map((text) => <p class="local-text">{text}</p>)}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .local-title { max-width: 20ch; margin-bottom: clamp(1.75rem, 3vw, 2.5rem); }
+
+  .local-body {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 68ch;
+    border-top: 2px solid var(--color-accent-3);
+    padding-top: clamp(1.75rem, 3vw, 2.25rem);
+  }
+
+  .local-text {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+</style>

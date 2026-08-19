@@ -1,0 +1,258 @@
+---
+import { SITE, BRAND } from '../config/site';
+import { PARTNER_CODE, goUrl } from '../config/affiliate';
+import { ENTITIES } from '../config/offers';
+import { COUNTRIES_BY_TIER, siblingsOf, type Country } from '../config/countries';
+import { useT, countryPath, blogPath, legalPath } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+const home = country ? countryPath(country.code) : '/';
+const year = new Date().getFullYear();
+
+/** Mercados vecinos del país actual; fuera de un país, los prioritarios. */
+const markets = (country ? siblingsOf(country) : COUNTRIES_BY_TIER).slice(0, 10);
+
+const legal = [
+  { label: t('legal.risk'), href: legalPath('risk') },
+  { label: t('legal.affiliate'), href: legalPath('affiliate') },
+  { label: t('legal.privacy'), href: legalPath('privacy') },
+  { label: t('legal.terms'), href: legalPath('terms') },
+  { label: t('legal.cookies'), href: legalPath('cookies') },
+];
+
+const nav = [
+  { label: t('nav.accounts'), href: `${home}#cuentas` },
+  { label: t('nav.platforms'), href: `${home}#plataformas` },
+  { label: t('nav.countries'), href: country ? `${home}#paises` : '/' },
+  { label: t('nav.blog'), href: blogPath() },
+  { label: t('nav.faq'), href: `${home}#faq` },
+];
+
+const regulators = Object.values(ENTITIES).map(
+  (e) => `${e.regulator} · ${e.license}`,
+);
+---
+
+<footer class="site-footer">
+  <div class="site-footer-main band-ink">
+    <div class="wrap">
+      <div class="footer-cta">
+        <p class="display display-m">{t('footer.ctaTitle')}</p>
+        <a
+          class="btn btn-accent"
+          href={goUrl('real', 'footer', country?.code)}
+          rel="sponsored nofollow noopener"
+          data-cta="footer"
+        >{t('nav.cta')}</a>
+      </div>
+
+      <hr class="rule" />
+
+      <div class="footer-grid">
+        <div class="footer-col footer-col-wide">
+          <a href={home} class="footer-logo" aria-label={SITE.brand}>
+            <img
+              src={BRAND.lockup.src}
+              width={BRAND.lockup.width}
+              height={BRAND.lockup.height}
+              alt={SITE.brand}
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+          <p class="eyebrow">{t('footer.about')}</p>
+          <p class="footer-text">{t('footer.aboutText')}</p>
+          <p class="footer-code mono">
+            {t('nav.cta')} · {PARTNER_CODE}
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <p class="eyebrow">{t('footer.nav')}</p>
+          <ul class="linklist">
+            {nav.map((item) => (
+              <li><a href={item.href}>{item.label}</a></li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="eyebrow">{t('footer.countries')}</p>
+          <ul class="linklist">
+            {markets.map((c) => (
+              <li>
+                <a href={countryPath(c.code)}>
+                  <span class="code">{c.code.toUpperCase()}</span>
+                  <span>{c.name}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <p class="eyebrow">{t('footer.legal')}</p>
+          <ul class="linklist">
+            {legal.map((item) => (
+              <li><a href={item.href}>{item.label}</a></li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/*
+    La letra pequeña sale del bloque negro y baja a papel.
+
+    Dos razones. La de forma: el negro es el 10% de la paleta y un pie que
+    incluya el aviso de riesgo completo más los créditos se lo come entero,
+    sobre todo en las páginas cortas —una legal o el índice del blog— donde
+    el pie llega a ser un tercio de la altura del documento.
+
+    La de fondo, que pesa más: el aviso de riesgo es obligatorio en todas las
+    páginas y es lo primero que mira Exness al auditar a un socio. Sobre
+    papel, en gris de 4,8:1, se lee; enterrado al final de un bloque negro,
+    no. No lo escondas ni le bajes el contraste.
+  */}
+  <div class="footer-fineprint">
+    <div class="wrap">
+      <div class="risk-strip">
+        <p><strong>{t('footer.risk')}.</strong> {t('risk.full')}</p>
+        <p class="footer-regulators mono">{regulators.join('   ·   ')}</p>
+      </div>
+
+      <div class="footer-base">
+        <p class="footer-affiliate">
+          <a href={legalPath('affiliate')}>{t('footer.disclosureShort')}</a>
+        </p>
+        <div class="footer-base-row">
+          <p>© {year} {SITE.brand}. {t('footer.rights')}</p>
+          <p class="mono">{SITE.domain}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer-main {
+    padding-block: clamp(3rem, 6vw, 5rem);
+    border-top: 2px solid var(--color-accent);
+  }
+
+  /* El hueco del dock fijo va en la letra pequeña, que es lo último. */
+  .footer-fineprint {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    padding-block: 0 6.5rem;
+  }
+
+  @media (min-width: 64rem) {
+    .footer-fineprint { padding-bottom: 2.5rem; }
+  }
+
+  .footer-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.75rem;
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .footer-cta p { max-width: 22ch; }
+
+  .footer-grid {
+    display: grid;
+    gap: 2.75rem;
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  @media (min-width: 48rem) {
+    .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  @media (min-width: 64rem) {
+    .footer-grid { grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 3.5rem; }
+  }
+
+  .footer-logo {
+    display: inline-block;
+    margin-bottom: 1.75rem;
+    transition: opacity 0.15s ease;
+  }
+
+  .footer-logo:hover { opacity: 0.78; }
+
+  .footer-logo img {
+    display: block;
+    block-size: 2.25rem;
+    inline-size: auto;
+  }
+
+  .footer-text {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--color-muted-2);
+    max-width: 44ch;
+    margin: 0;
+  }
+
+  .footer-code {
+    margin-top: 1.25rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .footer-col .linklist a { font-size: 0.875rem; }
+
+  .footer-regulators {
+    margin-top: 1rem;
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--color-muted);
+  }
+
+  .footer-base {
+    padding-top: 1.75rem;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+  }
+
+  .footer-base-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .footer-base p { margin: 0; }
+
+  /* Divulgación de afiliación: discreta pero legible y enlazada al texto
+     completo. La normativa de consumo exige que se pueda ver; el tamaño
+     mínimo tolerable sigue siendo 12 px con contraste suficiente. */
+  .footer-affiliate {
+    margin-bottom: 0.875rem !important;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    max-width: 78ch;
+  }
+
+  .footer-affiliate a {
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: rgba(255, 255, 255, 0.22);
+    transition: color 0.15s ease;
+  }
+
+  .footer-affiliate a:hover { color: var(--color-accent-2); }
+</style>

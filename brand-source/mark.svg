@@ -1,0 +1,16 @@
+<!--
+  Símbolo de EXZUN.
+
+  Geometría pura, sin texto y sin degradados: tiene que seguir siendo legible a
+  32 px en una pestaña del navegador, y cualquier detalle fino desaparece a ese
+  tamaño. Un galón ascendente sobre un filete macizo — mercado al alza sobre
+  una línea de base — en el amarillo de marca.
+
+  El lienzo es 512x512 y el dibujo ocupa de 56 a 456 en horizontal: ese aire de
+  56 px por lado es lo que evita que el símbolo toque el borde cuando se compone
+  dentro del cuadrado del favicon.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <polygon points="56,296 256,96 456,296 376,296 256,176 136,296" fill="#ffd400"/>
+  <rect x="56" y="356" width="400" height="76" fill="#ffd400"/>
+</svg>

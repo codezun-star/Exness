@@ -1,0 +1,190 @@
+---
+import Base from '../../layouts/Base.astro';
+import Ticker from '../../components/Ticker.astro';
+import Hero from '../../components/Hero.astro';
+import CountryFacts from '../../components/CountryFacts.astro';
+import Payments from '../../components/Payments.astro';
+import LocalNotes from '../../components/LocalNotes.astro';
+import Why from '../../components/Why.astro';
+import Advantages from '../../components/Advantages.astro';
+import Accounts from '../../components/Accounts.astro';
+import Steps from '../../components/Steps.astro';
+import Banner from '../../components/Banner.astro';
+import Platforms from '../../components/Platforms.astro';
+import Faq from '../../components/Faq.astro';
+import CountryGrid from '../../components/CountryGrid.astro';
+import CtaBand from '../../components/CtaBand.astro';
+
+import {
+  COUNTRIES, countryEntity, siblingsOf, type Country,
+} from '../../config/countries';
+import { useT, countryPath, blogPath, type UIKey } from '../../i18n/ui';
+import { abs, countryAlternates } from '../../lib/seo';
+import { guideFor, postSlug } from '../../lib/blog';
+import {
+  graph, organization, website, webPage, brokerEntity,
+  breadcrumbs, faqPage, howTo, itemList,
+} from '../../lib/schema';
+
+/**
+ * Landing de mercado: lo que cambia por jurisdicción y sólo se puede decir
+ * aquí — entidad reguladora, apalancamiento aplicable, métodos de depósito
+ * locales y activos más operados en la zona.
+ */
+export function getStaticPaths() {
+  return COUNTRIES.map((country) => ({
+    params: { country: country.code },
+    props: { country },
+  }));
+}
+
+interface Props { country: Country }
+
+const { country } = Astro.props as Props;
+const t = useT(country);
+const name = country.name;
+const entity = countryEntity(country);
+
+const title = t('seo.country.title');
+const description = t('seo.country.desc');
+const url = country.code;
+
+/** Preguntas específicas del país: es lo que dispara los fragmentos
+ *  destacados en búsquedas del tipo "Exness en <país> es seguro". */
+const qas = [
+  {
+    q: t('faq.q1'),
+    a: `${t('faq.a1')} ${name}: ${entity.legalName} — ${entity.regulator}, ${t('country.license').toLowerCase()} ${entity.license}.`,
+  },
+  {
+    q: t('payments.title', { country: name }),
+    a: `${t('payments.sub')} ${country.payments.join(', ')}.`,
+  },
+  { q: t('faq.q2'), a: t('faq.a2') },
+  { q: t('faq.q4'), a: t('faq.a4') },
+  { q: t('faq.q3'), a: t('faq.a3') },
+  { q: t('faq.q5'), a: t('faq.a5') },
+];
+
+const steps = [1, 2, 3, 4].map((n) => ({
+  name: t(`steps.${n}.t` as UIKey),
+  text: t(`steps.${n}.d` as UIKey),
+}));
+
+const siblings = siblingsOf(country);
+
+/** Guía larga del mercado, si ya está escrita. */
+const guide = await guideFor(country.name);
+
+const schema = graph(
+  organization(),
+  website(),
+  brokerEntity(),
+  webPage({ url: abs(url), title, description, updated: new Date() }),
+  breadcrumbs([
+    { name: t('nav.home'), path: '' },
+    { name, path: url },
+  ]),
+  faqPage(qas),
+  howTo({
+    name: `${t('steps.title')} — ${name}`,
+    description: t('steps.sub'),
+    totalTime: 'PT3M',
+    steps,
+  }),
+  itemList(
+    t('country.others'),
+    siblings.map((c) => ({ name: c.name, path: countryPath(c.code) })),
+  ),
+);
+---
+
+<Base
+  title={title}
+  description={description}
+  path={url}
+  country={country}
+  alternates={countryAlternates()}
+  schema={schema}
+>
+  <Ticker country={country} />
+
+  <Hero
+    country={country}
+    title={t('country.title')}
+    subtitle={t('country.sub')}
+  />
+
+  <CountryFacts country={country} />
+  <LocalNotes country={country} />
+
+  {guide && (
+    <section class="band band-tight band-paper-2" id="guia">
+      <div class="wrap guide-slot">
+        <p class="eyebrow">Guía completa</p>
+        <a class="guide-link" href={blogPath(postSlug(guide))}>
+          <span class="guide-title">{guide.data.title}</span>
+          <span class="guide-desc">{guide.data.description}</span>
+        </a>
+      </div>
+    </section>
+  )}
+  <Payments country={country} />
+
+  <div class="band-paper-2">
+    <div class="wrap">
+      <Banner seed={`market-top-${country.code}`} double />
+    </div>
+  </div>
+
+  <Why country={country} />
+  <Advantages country={country} entity={entity} />
+  <Accounts country={country} />
+  <Steps country={country} />
+
+  <div class="band-paper-2">
+    <div class="wrap">
+      <Banner seed={`market-${country.code}`} double />
+    </div>
+  </div>
+
+  <Platforms country={country} />
+  <Faq country={country} items={qas} />
+  <CountryGrid country={country} />
+  <CtaBand country={country} source={`country-${country.code}`} />
+</Base>
+
+<style>
+  .guide-slot { display: grid; gap: 1rem; }
+
+  /*
+    La landing responde a la intención transaccional; la guía, a la
+    informacional. Enlazarlas evita que compitan por la misma consulta y
+    manda al visitante que aún no está listo para abrir cuenta a un sitio
+    donde seguir leyendo en vez de al buscador.
+  */
+  .guide-link {
+    display: grid;
+    gap: 0.5rem;
+    max-width: 60ch;
+    text-decoration: none;
+    color: inherit;
+    border-top: 2px solid var(--color-accent-3);
+    padding-top: 1.25rem;
+  }
+
+  .guide-title {
+    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+
+  .guide-link:hover .guide-title { color: var(--color-accent-ink); }
+
+  .guide-desc {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    opacity: 0.72;
+  }
+</style>

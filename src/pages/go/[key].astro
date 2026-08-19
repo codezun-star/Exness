@@ -1,0 +1,110 @@
+---
+import { AFFILIATE_LINKS, type AffiliateKey } from '../../config/affiliate';
+import { SITE, BRAND } from '../../config/site';
+
+/**
+ * Redirector de afiliados.
+ *
+ * Ventajas frente a enlazar directo al link de socio desde cada botón:
+ *  1. Cambias un enlace en affiliate.ts y se actualiza todo el sitio.
+ *  2. Mides el CTR por posición (?s=hero, ?s=dock, ?s=blog-…) y por país.
+ *  3. Los enlaces salientes quedan aislados con noindex y rel sponsored.
+ *  4. Exness prohíbe los anuncios que apuntan directo al link de referido;
+ *     esta capa mantiene siempre una página propia de por medio.
+ */
+
+export function getStaticPaths() {
+  return (Object.keys(AFFILIATE_LINKS) as AffiliateKey[]).map((key) => ({
+    params: { key },
+    props: { target: AFFILIATE_LINKS[key] },
+  }));
+}
+
+interface Props { target: string }
+
+const { key } = Astro.params;
+const { target } = Astro.props;
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{SITE.brand}</title>
+
+    {/*
+      Red de seguridad: el salto NO puede depender de que el JavaScript se
+      ejecute. Si el script se bloquea —extensión de privacidad, error, JS
+      desactivado— sin esto el visitante se queda en una página casi vacía y
+      la comisión se pierde. El meta refresh no necesita JS y actúa a los 2 s;
+      cuando el JS sí corre, salta antes y esto nunca llega a dispararse.
+      Los 2 s dejan margen para volver atrás y evitan atrapar al usuario.
+    */}
+    <meta http-equiv="refresh" content={`2;url=${target}`} />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <style is:inline>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 1.5rem;
+        text-align: center;
+        background: #0b0b0c;
+        color: #fff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        padding: 2rem;
+      }
+      img { display: block; height: 2.5rem; width: auto; }
+      p { margin: 0; font-size: .8125rem; letter-spacing: .12em; text-transform: uppercase; color: #75757d; }
+      .hint { letter-spacing: normal; text-transform: none; font-size: .75rem; color: #55555c; max-width: 26ch; }
+      a {
+        display: inline-block;
+        padding: .875rem 1.75rem;
+        /* Tinta sobre amarillo: blanco aquí daría 1,5:1 y sería ilegible. */
+        background: #ffd400;
+        color: #0b0b0c;
+        font-weight: 700;
+        font-size: .875rem;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <img src={BRAND.lockup.src} width={BRAND.lockup.width} height={BRAND.lockup.height} alt={SITE.brand} />
+    <p id="msg">Te estamos llevando a Exness…</p>
+    <a id="target" href={target} rel="sponsored nofollow noopener" data-key={key}>
+      Continuar a Exness
+    </a>
+    <p class="hint">Si no ocurre nada en unos segundos, pulsa el botón.</p>
+
+    <script is:inline define:vars={{ target, key }}>
+      (function () {
+        var params = new URLSearchParams(location.search);
+        var source = params.get('s') || 'direct';
+        var country = params.get('c') || '';
+
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+          event: 'affiliate_click',
+          affiliate_key: key,
+          placement: source,
+          country: country,
+        });
+
+        if (window.fbq) window.fbq('track', 'Lead', { content_name: key });
+        if (window.ttq) window.ttq.track('ClickButton', { content_id: key });
+
+        // Sin espera: el push anterior es síncrono y aquí no se carga ningún
+        // contenedor de etiquetas al que haya que dar margen. Cada milisegundo
+        // de más es una oportunidad de que el visitante cierre la pestaña.
+        // `replace` en vez de `assign` para no dejar el redirector en el
+        // historial: el botón "atrás" devuelve a la página de origen.
+        location.replace(target);
+      })();
+    </script>
+  </body>
+</html>

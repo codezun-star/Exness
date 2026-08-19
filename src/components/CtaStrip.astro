@@ -1,0 +1,96 @@
+---
+import { goUrl } from '../config/affiliate';
+import { STATS } from '../config/offers';
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+  /** Identifica la posición en la analítica: strip-blog, strip-post-… */
+  source?: string;
+}
+
+const { country, source = 'strip' } = Astro.props;
+const t = useT(country);
+---
+
+{/*
+  Tira propia, en el hueco donde iría un leaderboard de 728x90.
+
+  EXNESS_BANNERS está vacío mientras no se carguen las creatividades del
+  panel de socio, y recortar o estirar una pieza ajena para simular una tira
+  va contra las condiciones de uso de esos materiales. Así que la tira la
+  ponemos nosotros: mismo hueco, mismo formato visual, con el enlace de
+  afiliado y sin tocar ninguna pieza de la marca. Además pesa cero: es texto,
+  no una imagen de terceros, así que no compite con el LCP de la página.
+*/}
+<aside class="strip on-ink" aria-label={t('cta.title')}>
+  <p class="strip-figure mono">
+    <span class="strip-amount">{STATS.minDeposit} USD</span>
+    <span class="strip-label">{t('trust.deposit')}</span>
+  </p>
+
+  <p class="strip-text">{t('hero.title')}</p>
+
+  <a
+    class="btn btn-accent strip-btn"
+    href={goUrl('real', source, country?.code)}
+    rel="sponsored nofollow noopener"
+    data-cta={source}
+  >{t('nav.cta')}</a>
+</aside>
+
+<style>
+  .strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.75rem;
+    margin-block: 2rem;
+    padding: 1.125rem 1.25rem;
+    background: var(--color-ink);
+    border-left: 3px solid var(--color-accent);
+    color: var(--color-paper);
+  }
+
+  .strip-figure {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    margin: 0;
+    flex: none;
+  }
+
+  .strip-amount {
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  .strip-label {
+    font-size: 0.5625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .strip-text {
+    margin: 0;
+    flex: 1 1 12rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .strip-btn {
+    flex: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.8125rem;
+  }
+
+  @media (max-width: 30rem) {
+    .strip-btn {
+      inline-size: 100%;
+      justify-content: center;
+    }
+  }
+</style>

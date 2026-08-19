@@ -1,0 +1,283 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Banner from '../../components/Banner.astro';
+import CtaStrip from '../../components/CtaStrip.astro';
+import SideRails from '../../components/SideRails.astro';
+
+import { goUrl } from '../../config/affiliate';
+import { useT, blogPath } from '../../i18n/ui';
+import { abs, readingTime } from '../../lib/seo';
+import { allPosts, postSlug, relatedTo, formatDate, type Post } from '../../lib/blog';
+import {
+  graph, organization, website, blogPosting, breadcrumbs, faqPage,
+} from '../../lib/schema';
+
+export async function getStaticPaths() {
+  const posts = await allPosts();
+  return posts.map((post) => ({
+    params: { slug: postSlug(post) },
+    props: { post },
+  }));
+}
+
+interface Props { post: Post }
+
+const { post } = Astro.props;
+const slug = postSlug(post);
+const t = useT();
+
+const { Content, headings } = await render(post);
+
+const url = blogPath(slug).replace(/^\/|\/$/g, '');
+const minutes = readingTime(post.body ?? '');
+const words = (post.body ?? '').trim().split(/\s+/).length;
+
+const related = await relatedTo(post);
+
+/** Sólo los h2 entran en el índice: los h3 harían la lista ilegible. */
+const toc = (headings ?? []).filter((h) => h.depth === 2);
+
+const schema = graph(
+  organization(),
+  website(),
+  blogPosting({
+    url: abs(url),
+    title: post.data.title,
+    description: post.data.description,
+    published: post.data.pubDate,
+    updated: post.data.updatedDate,
+    author: post.data.author,
+    tags: post.data.tags,
+    wordCount: words,
+  }),
+  breadcrumbs([
+    { name: t('nav.home'), path: '' },
+    { name: t('blog.title'), path: blogPath() },
+    { name: post.data.title, path: url },
+  ]),
+  post.data.faq.length ? faqPage(post.data.faq) : null,
+);
+---
+
+<Base
+ 
+  title={post.data.title}
+  description={post.data.description}
+  path={url}
+  theme="paper"
+  schema={schema}
+  rails={false}
+>
+  <article class="band-paper post">
+    <SideRails seed={`rail-${slug}`}>
+      <header class="wrap-narrow post-header">
+        <p class="eyebrow">
+          <a href={blogPath()}>{t('blog.title')}</a>
+        </p>
+        <h1 class="display display-l post-title">{post.data.title}</h1>
+        <p class="lede post-desc">{post.data.description}</p>
+
+        <div class="post-byline mono">
+          <span>{t('blog.by')} {post.data.author}</span>
+          <span>
+            <time datetime={post.data.pubDate.toISOString()}>
+              {formatDate(post.data.pubDate)}
+            </time>
+          </span>
+          <span>{minutes} {t('blog.min')}</span>
+        </div>
+
+        {post.data.updatedDate && (
+          <p class="post-updated mono">
+            {t('blog.updated')} {formatDate(post.data.updatedDate)}
+          </p>
+        )}
+      </header>
+
+      {/*
+        Tira bajo la firma. Los dos <Banner> horizontales sólo aparecerán el día
+        que haya creatividades de 728x90 o 320x100 en el panel; hasta entonces
+        no renderizan nada y el hueco lo cubre la tira propia.
+      */}
+      <div class="wrap-narrow">
+        <Banner format="leaderboard" seed={`strip-${slug}`} ruled={false} />
+        <Banner format="mobilebar" seed={`strip-m-${slug}`} ruled={false} />
+        <CtaStrip source={`strip-post-${slug}`} />
+      </div>
+
+      {post.data.answer && (
+        <div class="wrap-narrow">
+          <div class="answer-box">
+            <p class="eyebrow">{t('aeo.answer')}</p>
+            <p class="answer-text">{post.data.answer}</p>
+          </div>
+        </div>
+      )}
+
+      {toc.length > 2 && (
+        <nav class="wrap-narrow post-toc" aria-label={t('blog.toc')}>
+          <p class="eyebrow">{t('blog.toc')}</p>
+          <ol class="linklist">
+            {toc.map((heading, i) => (
+              <li>
+                <a href={`#${heading.slug}`}>
+                  <span class="code">{String(i + 1).padStart(2, '0')}</span>
+                  <span>{heading.text}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+
+      {/* Antes del cuerpo: el hueco con más visibilidad de la página. */}
+      <div class="wrap-narrow">
+        <Banner seed={`post-lede-${slug}`} double />
+      </div>
+
+      <div class="wrap-narrow prose">
+        <Content />
+      </div>
+
+      <div class="wrap-narrow post-inline-cta">
+        <p class="post-inline-title">{t('cta.title')}</p>
+        <a
+          class="btn btn-accent"
+          href={goUrl('real', `blog-${slug}`)}
+          rel="sponsored nofollow noopener"
+          data-cta="blog-inline"
+        >{t('cta.button')}</a>
+        <Banner seed={`post-${slug}`} ruled={false} double />
+      </div>
+
+      {post.data.faq.length > 0 && (
+        <section class="wrap-narrow post-faq">
+          <h2 class="post-section-title">{t('faq.title')}</h2>
+          {post.data.faq.map((qa) => (
+            <details class="qa">
+              <summary>{qa.q}</summary>
+              <div class="qa-body">{qa.a}</div>
+            </details>
+          ))}
+        </section>
+      )}
+
+      {post.data.tags.length > 0 && (
+        <div class="wrap-narrow post-tags">
+          {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+        </div>
+      )}
+
+      {related.length > 0 && (
+        <section class="wrap-narrow post-related">
+          <h2 class="post-section-title">{t('blog.related')}</h2>
+          <ul class="linklist">
+            {related.map((p) => (
+              <li>
+                <a href={blogPath(postSlug(p))}>
+                  <span class="code">{formatDate(p.data.pubDate).slice(-4)}</span>
+                  <span>{p.data.title}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div class="wrap-narrow">
+        <Banner seed={`post-end-${slug}`} double />
+        <p class="risk-strip">{t('risk.full')}</p>
+        <p class="post-back">
+          <a href={blogPath()}>{t('blog.back')}</a>
+        </p>
+      </div>
+    </SideRails>
+  </article>
+
+  <CtaBand source={`blog-${slug}`} />
+</Base>
+
+<style>
+  .post { padding-block: clamp(3rem, 6vw, 5rem) 4rem; }
+
+  .post-header { padding-bottom: 2.5rem; }
+
+  .post-header .eyebrow a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .post-header .eyebrow a:hover { text-decoration: underline; }
+
+  .post-title { max-width: 20ch; margin-bottom: 1.25rem; }
+  .post-desc { margin: 0 0 1.75rem; }
+
+  .post-byline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    padding-block: 1rem;
+    border-block: 1px solid var(--color-line);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .post-updated {
+    margin: 0.875rem 0 0;
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent-ink);
+  }
+
+  .answer-text {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  .post-toc { padding-block: 2.5rem 0; }
+  .post-toc ol { list-style: none; margin: 0; padding: 0; }
+  .post-toc a { font-size: 0.9375rem; }
+
+  .prose { padding-block: 2.5rem; }
+
+  .post-inline-cta {
+    padding-block: 2.5rem;
+    border-block: 2px solid var(--color-accent-3);
+    text-align: center;
+  }
+
+  .post-inline-title {
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.5rem;
+  }
+
+  .post-section-title {
+    font-size: clamp(1.375rem, 2.6vw, 1.875rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.5rem;
+  }
+
+  .post-faq { padding-block: 3rem 0; }
+  .post-tags { padding-block: 2.5rem; }
+  .post-tags .tag { margin-inline: 0 0.5rem; }
+  .post-related { padding-block: 1rem 3rem; }
+
+  .post-back {
+    margin: 1.5rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .post-back a { color: var(--color-accent-ink); text-decoration: none; }
+  .post-back a:hover { text-decoration: underline; }
+</style>

@@ -1,0 +1,156 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Dock from '../components/Dock.astro';
+import ExitIntent from '../components/ExitIntent.astro';
+import Consent from '../components/Consent.astro';
+import GeoNotice from '../components/GeoNotice.astro';
+import CountryMemory from '../components/CountryMemory.astro';
+import EdgeRails from '../components/EdgeRails.astro';
+import { SITE, ANALYTICS, VERIFICATION } from '../config/site';
+import { countryLocale, type Country } from '../config/countries';
+import { useT, LANG, DIR, INTL_LOCALE } from '../i18n/ui';
+import { abs, pageTitle, metaDescription, type Alternate } from '../lib/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Ruta canónica sin dominio, p. ej. "mx" o "blog/mi-articulo" */
+  path: string;
+  alternates?: Alternate[];
+  /** Objeto JSON-LD ya construido con graph() */
+  schema?: Record<string, unknown>;
+  /**
+   * Color del documento entero. `paper` es el valor por defecto porque el
+   * sitio es claro: el blanco es la superficie dominante y el negro está
+   * reservado a la cabecera, al pie y a los avisos. Sólo el 404 y el
+   * redirector piden `ink`, que son pantallas únicas sin recorrido.
+   */
+  theme?: 'ink' | 'paper';
+  country?: Country;
+  noindex?: boolean;
+  /** Oculta la barra fija inferior (páginas legales, redirector) */
+  bare?: boolean;
+  /**
+   * Raíles de rascacielos anclados al margen del viewport. Se apagan en las
+   * páginas que ya montan los suyos dentro del contenido, para no acabar con
+   * cuatro rascacielos en una pantalla ancha.
+   */
+  rails?: boolean;
+}
+
+const {
+  title,
+  description,
+  path,
+  alternates = [],
+  schema,
+  theme = 'paper',
+  country,
+  noindex = false,
+  bare = false,
+  rails = true,
+} = Astro.props;
+
+const t = useT(country);
+
+/** En una landing de mercado el locale lleva región: "es_MX", no "es_419". */
+const ogLocale = country ? countryLocale(country) : INTL_LOCALE.replace('-', '_');
+const canonical = abs(path);
+const fullTitle = pageTitle(title);
+const desc = metaDescription(description);
+
+const robots = noindex
+  ? 'noindex, nofollow'
+  : 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1';
+---
+
+<html lang={LANG} dir={DIR}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{fullTitle}</title>
+    <meta name="description" content={desc} />
+    <link rel="canonical" href={canonical} />
+    <meta name="robots" content={robots} />
+
+    {alternates.map((alt) => (
+      <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+    ))}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.brand} />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={desc} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={`${SITE.url}${SITE.ogImage}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={desc} />
+    <meta name="twitter:image" content={`${SITE.url}${SITE.ogImage}`} />
+
+    <meta name="theme-color" content={theme === 'paper' ? '#ffffff' : SITE.themeColor} />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/favicon.png" sizes="96x96" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.brand} — ${t('blog.title')}`} href="/rss.xml" />
+
+    {VERIFICATION.google && <meta name="google-site-verification" content={VERIFICATION.google} />}
+    {VERIFICATION.bing && <meta name="msvalidate.01" content={VERIFICATION.bing} />}
+    {VERIFICATION.yandex && <meta name="yandex-verification" content={VERIFICATION.yandex} />}
+
+    {/*
+      El único dominio de terceros al que va a saltar el visitante es el del
+      redirector de socios de Exness. Resolver el DNS antes de que pulse le
+      quita al salto un par de vueltas de red, que en móvil se nota.
+
+      Aquí había un preconnect a las creatividades de PipAffiliates, que es la
+      red de XM y no la de este bróker: abría una conexión TLS a un host al
+      que esta web no pide nada. Cuando EXNESS_BANNERS tenga piezas, añade el
+      preconnect al host de sus imágenes.
+    */}
+    <link rel="dns-prefetch" href="https://one.exnessonelink.com" />
+
+    {schema && (
+      <script
+        type="application/ld+json"
+        is:inline
+        set:html={JSON.stringify(schema)}
+      />
+    )}
+
+    <script is:inline>
+      // dataLayer disponible antes de cualquier interacción, para no perder
+      // los clics que ocurren mientras el consentimiento sigue pendiente.
+      window.dataLayer = window.dataLayer || [];
+      window.xmTrack = function (name, params) {
+        window.dataLayer.push(Object.assign({ event: name }, params || {}));
+      };
+    </script>
+  </head>
+
+  <body data-theme={theme}>
+    <a href="#main" class="sr-only">{t('nav.menu')}</a>
+
+    <Header country={country} />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer country={country} />
+
+    {!bare && <Dock country={country} />}
+    {!bare && <ExitIntent country={country} />}
+    {!bare && <GeoNotice currentCountry={country?.code} />}
+    {!bare && rails && <EdgeRails seed={`edge-${path || 'home'}`} />}
+    <CountryMemory country={country?.code} />
+    <Consent ga4={ANALYTICS.ga4} gtm={ANALYTICS.gtm} metaPixel={ANALYTICS.metaPixel} tiktokPixel={ANALYTICS.tiktokPixel} clarity={ANALYTICS.clarity} />
+  </body>
+</html>

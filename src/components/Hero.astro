@@ -1,0 +1,135 @@
+---
+import { goUrl } from '../config/affiliate';
+import { STATS } from '../config/offers';
+import { countryEntity, type Country } from '../config/countries';
+import { useT, DEFAULT_ENTITY } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+  /** Sobrescribe el titular en las páginas de país */
+  title?: string;
+  subtitle?: string;
+}
+
+const { country, title, subtitle } = Astro.props;
+const t = useT(country);
+const entity = country ? countryEntity(country) : null;
+
+const headline = title ?? t('hero.title');
+const highlight = t('hero.titleHighlight');
+const sub = subtitle ?? t('hero.sub');
+
+const figures = [
+  { value: `${STATS.minDeposit} USD`, label: t('trust.deposit') },
+  { value: STATS.instruments, label: t('stats.instruments') },
+  { value: (entity ?? DEFAULT_ENTITY).maxLeverage, label: t('trust.leverage') },
+  { value: STATS.executionSpeed, label: t('trust.execution') },
+];
+---
+
+<section class="hero band-paper">
+  <div class="wrap">
+    <p class="eyebrow">
+      {t('hero.badge')}
+      {country && <span class="hero-badge-country">· {country.name}</span>}
+    </p>
+
+    <h1 class="display display-xl hero-title">
+      {headline}
+      <span class="hero-accent">{highlight}</span>
+    </h1>
+
+    <p class="lede hero-lede">{sub}</p>
+
+    <div class="hero-actions">
+      <a
+        class="btn btn-accent"
+        href={goUrl('real', 'hero', country?.code)}
+        rel="sponsored nofollow noopener"
+        data-cta="hero"
+      >{t('hero.cta')}</a>
+      <a
+        class="btn btn-ghost"
+        href={goUrl('home', 'hero-demo', country?.code)}
+        rel="sponsored nofollow noopener"
+        data-cta="hero-demo"
+      >{t('hero.cta2')}</a>
+    </div>
+
+    <p class="hero-note">{t('hero.note')}</p>
+  </div>
+
+  <div class="wrap">
+    <dl class="datagrid datagrid-4 hero-figures">
+      {figures.map((f) => (
+        <div>
+          <dd class="figure">{f.value}</dd>
+          <dt class="figure-label">{f.label}</dt>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: clamp(3.5rem, 8vw, 7rem) 0;
+    /* Trama diagonal muy sutil: da textura sin recurrir a imágenes. */
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.022) 0 1px,
+      transparent 1px 9px
+    );
+  }
+
+  .hero-badge-country {
+    color: var(--color-muted);
+    letter-spacing: 0.12em;
+  }
+
+  .hero-title {
+    max-width: 16ch;
+    margin-bottom: 1.75rem;
+  }
+
+  .hero-accent {
+    display: block;
+    color: var(--color-accent-ink);
+  }
+
+  .hero-lede { margin: 0 0 2.5rem; }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.875rem;
+  }
+
+  .hero-actions .btn { flex: 1 1 15rem; }
+
+  @media (min-width: 40rem) {
+    .hero-actions .btn { flex: 0 0 auto; }
+  }
+
+  .hero-note {
+    margin: 1.5rem 0 0;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+  }
+
+  .hero-figures {
+    margin-top: clamp(3rem, 6vw, 5rem);
+    border-bottom: 0;
+  }
+
+  .hero-figures > div { border-bottom: 0; }
+
+  @media (max-width: 47.99rem) {
+    .hero-figures {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 1.5rem;
+    }
+    .hero-figures > div { border-bottom: 1px solid var(--color-line); }
+  }
+</style>

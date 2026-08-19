@@ -1,0 +1,110 @@
+---
+import { COUNTRIES } from '../config/countries';
+
+interface Props {
+  /** Código ISO-2 del mercado de esta página, si la página tiene uno. */
+  country?: string;
+}
+
+const { country } = Astro.props;
+
+/**
+ * Memoria de mercado.
+ *
+ * El sitio es estático: el blog, las legales y la portada se compilan una sola
+ * vez y no saben de qué país viene el visitante. Sin esto, alguien que estaba
+ * en /hn/ abría un artículo y la cabecera volvía a decir «País», los CTA
+ * perdían el parámetro de mercado y el siguiente clic ya no atribuía el país.
+ *
+ * Así que el mercado se recuerda en el navegador y se vuelve a aplicar en las
+ * páginas que no lo llevan en la URL: etiqueta del selector, enlaces de la
+ * cabecera y parámetro `c=` de todos los enlaces de afiliado. El visitante
+ * sigue en su país hasta que elija otro en el selector.
+ */
+const data = {
+  current: (country ?? '').toLowerCase(),
+  codes: COUNTRIES.map((c) => c.code.toLowerCase()),
+};
+---
+
+<script type="application/json" id="market-data" is:inline set:html={JSON.stringify(data)}></script>
+
+<script>
+  interface MarketData {
+    current: string;
+    codes: string[];
+  }
+
+  /** Último mercado visto o elegido. */
+  const KEY = 'exness-country';
+  /** Marca de elección manual en el selector: pesa más que la geolocalización. */
+  const PICK = 'exness-country-pick';
+
+  const raw = document.getElementById('market-data')?.textContent;
+
+  if (raw) {
+    const data: MarketData = JSON.parse(raw);
+
+    const read = (key: string) => {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    };
+
+    const write = (key: string, value: string) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        /* Modo privado: la memoria dura lo que la pestaña. */
+      }
+    };
+
+    // Elegir en el selector es una decisión explícita: se recuerda antes de
+    // que el navegador cambie de página y bloquea futuras sugerencias por IP.
+    document.addEventListener('click', (event) => {
+      const target = event.target as Element | null;
+      const link = target?.closest?.('[data-market-pick]') as HTMLElement | null;
+      const code = link?.dataset.marketPick?.toLowerCase();
+      if (!code || !data.codes.includes(code)) return;
+      write(KEY, code);
+      write(PICK, '1');
+    });
+
+    if (data.current) {
+      // Página de mercado: la URL manda y actualiza la memoria.
+      write(KEY, data.current);
+    } else {
+      const saved = read(KEY)?.toLowerCase();
+
+      if (saved && data.codes.includes(saved)) {
+        const upper = saved.toUpperCase();
+
+        // La etiqueta del selector: la señal visible de que sigues en tu país.
+        document.querySelectorAll('[data-country-label]').forEach((el) => {
+          el.textContent = upper;
+        });
+
+        // Enlaces de la cabecera construidos sobre la portada ("/#cuentas")
+        // pasan a apuntar al mercado recordado ("/hn/#cuentas").
+        document.querySelectorAll<HTMLAnchorElement>('[data-market-link]').forEach((el) => {
+          const href = el.getAttribute('href');
+          if (!href || !href.startsWith('/') || href.startsWith('//')) return;
+          el.setAttribute('href', `/${saved}${href}`);
+        });
+
+        // Enlaces de afiliado: sin `c=` la comisión llega sin país y no se
+        // puede saber qué mercado convierte.
+        document.querySelectorAll<HTMLAnchorElement>('a[href^="/go/"]').forEach((el) => {
+          const url = new URL(el.getAttribute('href') ?? '', location.origin);
+          if (url.searchParams.get('c')) return;
+          url.searchParams.set('c', saved);
+          el.setAttribute('href', `${url.pathname}${url.search}`);
+        });
+
+        document.documentElement.dataset.market = saved;
+      }
+    }
+  }
+</script>

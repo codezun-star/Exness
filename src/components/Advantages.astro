@@ -1,0 +1,153 @@
+---
+import { ADVANTAGES, type Entity } from '../config/offers';
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT, type UIKey } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+  /**
+   * Entidad cuyas reglas se aplican. Obligatoria a propósito: sin entidad la
+   * única respuesta posible sería "sí, anuncia el apalancamiento ilimitado",
+   * que bajo ESMA es ilegal. Que el tipo la exija obliga a decidirlo en cada
+   * página en vez de heredarlo por accidente.
+   */
+  entity: Entity;
+}
+
+const { country, entity } = Astro.props;
+const t = useT(country);
+
+/*
+  Este bloque ocupa el lugar que en un sitio de XM ocupa el bono, y el cambio
+  no es cosmético: Exness NO ofrece bonos de bienvenida ni de depósito, y lo
+  declara de forma expresa. Anunciar uno sería publicidad falsa.
+
+  Lo que sí varía por jurisdicción es el apalancamiento escalado, así que es
+  esa ventaja —y sólo esa— la que se cae cuando la entidad no permite
+  anunciarla. Si además la entidad no atiende minoristas, no hay nada que
+  ofrecer y el bloque entero se sustituye por el aviso de protección.
+*/
+const gated = !entity.scaledLeverage;
+const items = ADVANTAGES.filter((a) => !(a.entityGated && gated));
+const showFallback = gated && !entity.retailClients;
+---
+
+{!showFallback ? (
+  <section class="band band-accent advantages" id="ventajas">
+    <div class="wrap">
+      <p class="eyebrow">{t('adv.title')}</p>
+      <p class="adv-desc">{t('adv.desc')}</p>
+
+      <ul class="adv-list">
+        {items.map((item) => (
+          <li class="adv-item">
+            <p class="adv-item-title">{t(`adv.${item.key}.t` as UIKey)}</p>
+            <p class="adv-item-text">{t(`adv.${item.key}.d` as UIKey)}</p>
+          </li>
+        ))}
+      </ul>
+
+      {gated && <p class="adv-gated">{t('adv.blocked')}</p>}
+
+      <a
+        class="btn btn-invert adv-cta"
+        href={goUrl('real', 'ventajas', country?.code)}
+        rel="sponsored nofollow noopener"
+        data-cta="ventajas"
+      >{t('adv.cta')}</a>
+
+      <p class="adv-terms">{t('adv.terms')}</p>
+    </div>
+  </section>
+) : (
+  <section class="band band-tight band-ink" id="ventajas">
+    <div class="wrap">
+      <p class="eyebrow">{t('country.protection')}</p>
+      <p class="adv-blocked">{t('adv.blocked')}</p>
+      {entity.compensation && (
+        <p class="adv-compensation mono">{entity.compensation}</p>
+      )}
+    </div>
+  </section>
+)}
+
+<style>
+  .adv-desc {
+    font-size: clamp(1.0625rem, 1.8vw, 1.375rem);
+    line-height: 1.5;
+    margin: 0 0 2.5rem;
+    max-width: 56ch;
+  }
+
+  .adv-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    border-top: 1px solid rgba(11, 11, 12, 0.22);
+  }
+
+  @media (min-width: 48rem) {
+    .adv-list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 3rem; }
+  }
+
+  @media (min-width: 72rem) {
+    .adv-list { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 2.5rem; }
+  }
+
+  .adv-item {
+    border-bottom: 1px solid rgba(11, 11, 12, 0.22);
+    padding-block: 1.5rem;
+    padding-inline-end: 1.5rem;
+  }
+
+  .adv-item-title {
+    font-size: clamp(1.0625rem, 1.6vw, 1.25rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 0.5rem;
+  }
+
+  .adv-item-text {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    margin: 0;
+    /* Sobre amarillo no hay gris que funcione: el matiz lo da la opacidad. */
+    opacity: 0.78;
+  }
+
+  .adv-gated {
+    margin: 1.75rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    max-width: 60ch;
+    opacity: 0.85;
+  }
+
+  .adv-cta { margin-top: 2.25rem; }
+
+  .adv-terms {
+    margin: 1.25rem 0 0;
+    font-size: 0.6875rem;
+    line-height: 1.55;
+    opacity: 0.72;
+    max-width: 62ch;
+  }
+
+  .adv-blocked {
+    font-size: clamp(1.0625rem, 1.8vw, 1.375rem);
+    line-height: 1.55;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  .adv-compensation {
+    margin: 1.25rem 0 0;
+    font-size: 0.8125rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-2);
+  }
+</style>

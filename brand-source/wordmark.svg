@@ -1,0 +1,16 @@
+<!--
+  Wordmark de EXZUN.
+
+  En blanco porque vive siempre sobre fondo tinta: cabecera, pie, 404,
+  redirector e imagen Open Graph son todos oscuros. El amarillo se reserva para
+  el símbolo, que es quien lleva el color de marca.
+
+  ⚠️ Depende de una fuente instalada en la máquina que ejecuta el script
+  (DejaVu Sans Bold, con reservas). Por eso los PNG resultantes SE VERSIONAN en
+  public/brand/: el sitio nunca rasteriza esto en el despliegue, sólo sirve los
+  archivos ya generados. `npm run brand` es mantenimiento, no parte del build.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="200">
+  <text x="0" y="150" font-family="DejaVu Sans, Verdana, Helvetica, Arial, sans-serif"
+        font-size="164" font-weight="bold" letter-spacing="-4" fill="#ffffff">EXZUN</text>
+</svg>

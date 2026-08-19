@@ -1,0 +1,146 @@
+---
+import { COUNTRIES, countryHreflang, type Country } from '../config/countries';
+import { useT, countryPath } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/**
+ * Selector de mercado — el único selector del sitio. Los enlaces llevan su
+ * hreflang de región para que el rastreador entienda que apuntan a otra
+ * localización del mismo contenido, no a una página distinta.
+ */
+const tiered = [1, 2, 3].map((tier) => ({
+  tier,
+  list: COUNTRIES.filter((c) => c.tier === tier),
+}));
+---
+
+<details class="country-switch">
+  <summary aria-label={t('country.choose')}>
+    {/* Sin país en la URL, CountryMemory escribe aquí el mercado recordado. */}
+    <span class="mono" data-country-label>{country ? country.code.toUpperCase() : t('country.label')}</span>
+    <span class="country-switch-caret" aria-hidden="true"></span>
+  </summary>
+
+  <div class="country-panel on-ink">
+    <p class="eyebrow country-panel-head">{t('country.choose')}</p>
+
+    <div class="country-panel-cols">
+      {tiered.map(({ tier, list }) => (
+        <ul class="linklist">
+          <li class="country-panel-tier mono">{String(tier).padStart(2, '0')}</li>
+          {list.map((c) => (
+            <li>
+              <a
+                href={countryPath(c.code)}
+                hreflang={countryHreflang(c)}
+                data-market-pick={c.code}
+                rel={c.code === country?.code ? 'nofollow' : undefined}
+              >
+                <span class="code">{c.code.toUpperCase()}</span>
+                <span>{c.name}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ))}
+    </div>
+  </div>
+</details>
+
+<style>
+  .country-switch {
+    position: relative;
+  }
+
+  .country-switch > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    cursor: pointer;
+    list-style: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    border: 1px solid var(--color-line-ink);
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .country-switch > summary::-webkit-details-marker { display: none; }
+
+  .country-switch > summary:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent-2);
+  }
+
+  .country-switch-caret {
+    inline-size: 0.4375rem;
+    block-size: 0.4375rem;
+    border-inline-end: 1.5px solid currentColor;
+    border-block-end: 1.5px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+  }
+
+  .country-switch[open] .country-switch-caret {
+    transform: translateY(1px) rotate(-135deg);
+  }
+
+  /**
+   * En móvil el panel se ancla al viewport, no al botón.
+   *
+   * Anclado a `inset-inline-end: 0` del <details>, un panel de 92vw nace en el
+   * borde derecho del botón y crece hacia la izquierda — con el botón a media
+   * cabecera, eso dejaba 44 px de panel fuera de la pantalla y sin forma de
+   * alcanzarlos. Fijado al viewport siempre cabe, sea cual sea la posición del
+   * botón. A partir de 40rem sí hay sitio de sobra y vuelve a colgar del botón.
+   */
+  .country-panel {
+    position: fixed;
+    inset-inline: 0.75rem;
+    top: 4.75rem;
+    z-index: 70;
+    max-block-size: calc(100dvh - 6rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--color-ink-2);
+    border: 1px solid var(--color-line-ink);
+    padding: 1.5rem;
+  }
+
+  @media (min-width: 40rem) {
+    .country-panel {
+      position: absolute;
+      inset-inline: auto 0;
+      top: calc(100% + 0.5rem);
+      inline-size: min(92vw, 42rem);
+      max-block-size: 70vh;
+      padding: 1.75rem;
+    }
+  }
+
+  .country-panel-head { margin-bottom: 1.25rem; }
+
+  .country-panel-cols {
+    display: grid;
+    gap: 1.5rem 2rem;
+  }
+
+  @media (min-width: 40rem) {
+    .country-panel-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  .country-panel-tier {
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    color: var(--color-accent);
+    padding-bottom: 0.5rem;
+  }
+
+  .country-panel .linklist a { font-size: 0.875rem; }
+</style>

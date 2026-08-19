@@ -1,0 +1,95 @@
+---
+import { ACCOUNTS } from '../config/offers';
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+const nf = new Intl.NumberFormat('en-US');
+---
+
+<section class="band band-paper" id="cuentas">
+  <div class="wrap">
+    <p class="eyebrow">{t('nav.accounts')}</p>
+    <h2 class="display display-l accounts-title">{t('accounts.title')}</h2>
+    <p class="lede accounts-lede">{t('accounts.sub')}</p>
+
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th scope="col">{t('accounts.col.type')}</th>
+            <th scope="col">{t('accounts.col.min')}</th>
+            <th scope="col">{t('accounts.col.spread')}</th>
+            <th scope="col">{t('accounts.col.commission')}</th>
+            <th scope="col">{t('accounts.col.lot')}</th>
+            <th scope="col"><span class="sr-only">{t('accounts.cta')}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {ACCOUNTS.map((account) => (
+            <tr class={account.featured ? 'featured' : undefined}>
+              <th scope="row" class="account-name">
+                {account.name}
+                {account.featured && <span class="tag">{t('accounts.recommended')}</span>}
+              </th>
+              <td class="num">{nf.format(account.minDeposit)} USD</td>
+              <td class="num">{account.spreadFrom === '—' ? '—' : `${account.spreadFrom} pips`}</td>
+              <td class="num">{account.commission}</td>
+              <td class="num">{account.lotSize}</td>
+              <td class="account-action">
+                <a
+                  href={goUrl('real', `accounts-${account.key}`, country?.code)}
+                  rel="sponsored nofollow noopener"
+                  data-cta={`accounts-${account.key}`}
+                >{t('accounts.cta')}</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="accounts-note">{t('accounts.note')}</p>
+  </div>
+</section>
+
+<style>
+  .accounts-title { max-width: 16ch; margin-bottom: 1.25rem; }
+  .accounts-lede { margin: 0 0 clamp(2rem, 4vw, 3rem); }
+
+  .account-name {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+  }
+
+  .account-action { text-align: end; white-space: nowrap; }
+
+  .account-action a {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent-ink);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 2px;
+  }
+
+  .account-action a:hover { color: var(--color-ink); }
+
+  .accounts-note {
+    margin: 1.75rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    max-width: 60ch;
+  }
+</style>

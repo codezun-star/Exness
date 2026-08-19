@@ -1,0 +1,101 @@
+---
+import { STATS } from '../config/offers';
+import { countryEntity, type Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+const entity = countryEntity(country);
+const name = country.name;
+
+const facts = [
+  { label: t('country.entity'), value: entity.legalName },
+  { label: t('country.regulator'), value: entity.regulator },
+  { label: t('country.license'), value: entity.license, mono: true },
+  { label: t('country.leverage'), value: entity.maxLeverage, mono: true },
+  { label: t('trust.deposit'), value: `${STATS.minDeposit} USD`, mono: true },
+  {
+    label: t('country.protection'),
+    value: entity.compensation
+      ? `${t('trust.nbp')} · ${entity.compensation}`
+      : t('trust.nbp'),
+  },
+];
+
+if (country.localRegulator) {
+  facts.push({ label: t('country.localRegulator'), value: country.localRegulator });
+}
+---
+
+<section class="band band-paper" id="regulacion">
+  <div class="wrap">
+    <p class="eyebrow">{name} · {country.currency}</p>
+    <h2 class="display display-m facts-title">{t('country.entity')}</h2>
+
+    <dl class="datagrid datagrid-3 facts-grid">
+      {facts.map((fact) => (
+        <div>
+          <dt class="figure-label facts-label">{fact.label}</dt>
+          <dd class:list={['facts-value', fact.mono && 'mono']}>{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
+
+    <h3 class="facts-assets-title">{t('country.assets', { country: name })}</h3>
+    <p class="facts-assets-sub">{t('country.assetsSub')}</p>
+    <ul class="asset-list">
+      {country.assets.map((asset) => (
+        <li class="asset-item mono">{asset}</li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .facts-title { max-width: 20ch; margin-bottom: clamp(2rem, 4vw, 3rem); }
+
+  .facts-label { margin: 0 0 0.625rem; }
+
+  .facts-value {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.4;
+  }
+
+  .facts-assets-title {
+    margin: clamp(2.5rem, 5vw, 4rem) 0 0.625rem;
+    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .facts-assets-sub {
+    margin: 0 0 1.75rem;
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+    max-width: 52ch;
+  }
+
+  .asset-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+  }
+
+  .asset-item {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--color-line);
+    padding: 0.5rem 0.875rem;
+  }
+</style>

@@ -1,0 +1,82 @@
+---
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT, type UIKey } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+const steps = [1, 2, 3, 4].map((n) => ({
+  n: String(n),
+  title: t(`steps.${n}.t` as UIKey),
+  text: t(`steps.${n}.d` as UIKey),
+}));
+---
+
+<section class="band band-accent" id="abrir-cuenta">
+  <div class="wrap steps-head">
+    <div>
+      <p class="eyebrow">{t('steps.time')}</p>
+      <h2 class="display display-l steps-title">{t('steps.title')}</h2>
+      <p class="lede">{t('steps.sub')}</p>
+    </div>
+    <a
+      class="btn btn-accent steps-cta"
+      href={goUrl('real', 'steps', country?.code)}
+      rel="sponsored nofollow noopener"
+      data-cta="steps"
+    >{t('steps.cta')}</a>
+  </div>
+
+  <div class="wrap">
+    <ol class="datagrid datagrid-4 steps-list">
+      {steps.map((step) => (
+        <li>
+          <span class="idx" aria-hidden="true">{step.n}</span>
+          <h3 class="steps-item-title">{step.title}</h3>
+          <p class="steps-item-text">{step.text}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .steps-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .steps-title { max-width: 14ch; margin-bottom: 1.25rem; }
+  .steps-cta { flex: none; }
+
+  .steps-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: none;
+  }
+
+  .steps-item-title {
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.3;
+    margin: 0 0 0.625rem;
+  }
+
+  .steps-item-text {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: var(--color-ink); opacity: 0.72;
+  }
+</style>

@@ -1,0 +1,76 @@
+---
+import { STATS } from '../config/offers';
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/*
+  La columna «bróker medio» no compara con nadie en concreto a propósito: es
+  el rango habitual del sector, no una casa señalada. Nombrar competidores en
+  una tabla de afiliado es la vía rápida a una reclamación por publicidad
+  comparativa, y no aporta un solo clic más.
+*/
+const rows = [
+  { feature: t('compare.f1'), broker: `${STATS.minDeposit} USD`, other: '100 – 250 USD' },
+  { feature: t('compare.f2'), broker: STATS.transferFee, other: t('compare.no') },
+  { feature: t('compare.f3'), broker: t('compare.yes'), other: t('compare.no') },
+  { feature: t('compare.f4'), broker: t('compare.yes'), other: t('compare.no') },
+  { feature: t('compare.f5'), broker: t('compare.yes'), other: t('compare.no') },
+  { feature: t('compare.f6'), broker: t('compare.yes'), other: t('compare.no') },
+];
+---
+
+<section class="band band-paper-2" id="comparativa">
+  <div class="wrap">
+    <p class="eyebrow">{t('compare.col.feature')}</p>
+    <h2 class="display display-l compare-title">{t('compare.title')}</h2>
+    <p class="lede compare-lede">{t('compare.sub')}</p>
+
+    <div class="table-scroll">
+      <table class="data compare-table">
+        <thead>
+          <tr>
+            <th scope="col">{t('compare.col.feature')}</th>
+            <th scope="col" class="col-broker">{t('compare.col.broker')}</th>
+            <th scope="col">{t('compare.col.others')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr>
+              <th scope="row">{row.feature}</th>
+              <td class="num col-broker">{row.broker}</td>
+              <td class="num col-other">{row.other}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<style>
+  .compare-title { max-width: 16ch; margin-bottom: 1.25rem; }
+  .compare-lede { margin: 0 0 clamp(2rem, 4vw, 3rem); }
+
+  .compare-table th[scope='row'] {
+    font-weight: 600;
+    font-size: 0.9375rem;
+  }
+
+  /* Banda clara: el acento como texto es el ámbar, no el amarillo puro. */
+  .compare-table .col-broker {
+    font-weight: 700;
+    color: var(--color-accent-ink);
+    box-shadow: inset 2px 0 0 var(--color-accent-3), inset -2px 0 0 var(--color-accent-3);
+  }
+
+  .compare-table thead .col-broker { color: var(--color-accent-ink); }
+  .compare-table .col-other { color: var(--color-muted); }
+</style>
