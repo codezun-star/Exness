@@ -1,0 +1,122 @@
+---
+import { goUrl, videoEmbed, videoFor } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  /** Identifica el hueco: decide qué vídeo del panel le toca, de forma estable. */
+  seed: string;
+  country?: Country;
+  /** Titular propio del bloque. Si no se pasa, usa el genérico del diccionario. */
+  title?: string;
+  /** Identificador de la posición para la analítica del CTA. */
+  source?: string;
+  /** Filete superior e inferior, para integrarlo en la retícula editorial. */
+  ruled?: boolean;
+}
+
+const {
+  seed,
+  country,
+  title,
+  source = `video-${seed}`,
+  ruled = true,
+} = Astro.props;
+
+const t = useT(country);
+const video = videoFor(seed);
+---
+
+{/*
+  Vídeo de marca del panel de socio.
+
+  Tres decisiones que no son de estilo:
+
+  1. El iframe lleva `loading="lazy"`. Una incrustación de vídeo pesa más que
+     el resto de la página junta; cargarla de entrada hundiría el LCP de una
+     landing cuyo único trabajo es convertir en los primeros tres segundos.
+  2. No hay `autoplay`. Un vídeo que arranca solo con sonido es la forma más
+     rápida de que se cierre la pestaña, y en móvil gasta datos no pedidos.
+  3. Debajo del vídeo va SIEMPRE un CTA. Un vídeo sin salida es entretenimiento;
+     con salida es el paso previo al registro, que es a lo que vino esta web.
+*/}
+{video && (
+  <div class:list={['video-block', ruled && 'video-block-ruled']}>
+    <p class="banner-label mono">Vídeo de Exness</p>
+
+    <p class="video-title">{title ?? t('video.title')}</p>
+
+    <div class="video-frame">
+      <iframe
+        src={videoEmbed(video.id)}
+        title={video.title}
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <a
+      class="btn btn-accent video-cta"
+      href={goUrl('real', source, country?.code)}
+      rel="sponsored nofollow noopener"
+      data-cta={source}
+    >{t('video.cta')}</a>
+  </div>
+)}
+
+<style>
+  .video-block {
+    display: grid;
+    justify-items: center;
+    gap: 0.875rem;
+    padding-block: 2.25rem;
+    text-align: center;
+  }
+
+  .video-block-ruled { border-block: 1px solid var(--color-line); }
+
+  :global([data-theme='ink']) .video-block-ruled {
+    border-block-color: var(--color-line-ink);
+  }
+
+  .banner-label {
+    margin: 0;
+    font-size: 0.5625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    opacity: 0.45;
+  }
+
+  .video-title {
+    margin: 0 0 0.375rem;
+    max-width: 32ch;
+    font-size: clamp(1.125rem, 2.2vw, 1.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  /*
+    Marco 16:9 con reserva de espacio. Sin `aspect-ratio` el iframe entra con
+    alto 150px y salta al cargar, que es el peor sitio para un salto de
+    maquetación: justo encima del botón que queremos que pulsen.
+  */
+  .video-frame {
+    width: 100%;
+    max-width: 44rem;
+    aspect-ratio: 16 / 9;
+    background: var(--color-ink);
+    overflow: hidden;
+  }
+
+  .video-frame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .video-cta { margin-top: 0.75rem; }
+</style>

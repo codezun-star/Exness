@@ -3,12 +3,13 @@ import Base from '../../layouts/Base.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import Banner from '../../components/Banner.astro';
 import CtaStrip from '../../components/CtaStrip.astro';
+import Video from '../../components/Video.astro';
 
 import { useT, blogPath } from '../../i18n/ui';
 import { abs, readingTime } from '../../lib/seo';
 import { allPosts, postSlug, formatDate } from '../../lib/blog';
 import {
-  graph, organization, website, webPage, breadcrumbs, itemList,
+  graph, organization, website, webPage, brokerEntity, breadcrumbs, itemList,
 } from '../../lib/schema';
 
 const t = useT();
@@ -22,6 +23,7 @@ const description = t('seo.blog.desc');
 const schema = graph(
   organization(),
   website(),
+  brokerEntity(),
   webPage({ url: abs(url), title, description, updated: new Date() }),
   breadcrumbs([
     { name: t('nav.home'), path: '' },
@@ -64,7 +66,7 @@ const schema = graph(
             <>
             {i > 0 && i % 6 === 0 && (
               <li class="post-row post-row-ad">
-                <Banner seed={`blog-list-${i}`} ruled={false} double />
+                <Banner format="square" seed={`blog-list-${i}`} ruled={false} double />
               </li>
             )}
             <li class="post-row">
@@ -90,7 +92,15 @@ const schema = graph(
       <Banner format="leaderboard" seed="blog-strip" />
       <Banner format="mobilebar" seed="blog-strip-m" />
       <CtaStrip source="strip-blog" />
-      <Banner seed="blog-index" double />
+
+      {/*
+        El vídeo cierra el índice, después del listado. Quien ha bajado hasta
+        aquí sin entrar en ningún artículo está explorando, no leyendo: es el
+        visitante al que un vídeo de marca le sirve más que otro titular.
+      */}
+      <Video seed="blog-index-video" source="video-blog-index" />
+
+      <Banner format="billboard" seed="blog-index" />
     </div>
   </section>
 

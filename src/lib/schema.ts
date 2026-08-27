@@ -53,6 +53,16 @@ export function website() {
   };
 }
 
+/**
+ * Nodo WebPage.
+ *
+ * ⚠️ Declara `about: #exness`, así que el grafo que lo incluya TIENE que
+ * incluir también brokerEntity(). Una referencia a un @id que no existe en el
+ * mismo grafo es un nodo colgando: el validador de Google lo marca y los
+ * motores generativos, que resuelven el grafo entero, se quedan sin saber de
+ * qué trata la página. Se dejó de cumplir en el índice del blog y en las
+ * cinco páginas legales hasta la revisión de 2026-08.
+ */
 export function webPage(opts: {
   url: string;
   title: string;
@@ -149,7 +159,23 @@ export function blogPosting(opts: {
     dateModified: (opts.updated ?? opts.published).toISOString(),
     author: { '@type': 'Person', name: opts.author },
     publisher: { '@id': ORG_ID },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': `${opts.url}#webpage` },
+    // `mainEntityOfPage` apunta a un nodo WebPage que TIENE que existir en el
+    // mismo grafo. Sin él la referencia queda colgando y el validador de
+    // Google avisa; la página del artículo emite ese nodo desde webPage().
+    mainEntityOfPage: { '@id': `${opts.url}#webpage` },
+    // Google pide una imagen en cualquier tipo de artículo para poder
+    // mostrarlo en los formatos con miniatura. Sin ella el resultado se
+    // renderiza como un enlace de texto.
+    image: {
+      '@type': 'ImageObject',
+      url: `${SITE.url}${SITE.ogImage}`,
+      width: 1200,
+      height: 630,
+    },
+    // El artículo habla de Exness: declararlo enlaza cada pieza de contenido
+    // con la entidad del bróker, que es lo que hace que un motor generativo
+    // entienda el sitio como una fuente sobre Exness y no como texto suelto.
+    about: { '@id': `${SITE.url}/#exness` },
     ...(opts.tags?.length ? { keywords: opts.tags.join(', ') } : {}),
     ...(opts.wordCount ? { wordCount: opts.wordCount } : {}),
   };

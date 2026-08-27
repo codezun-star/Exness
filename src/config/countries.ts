@@ -1,5 +1,5 @@
 import type { EntityId } from './offers';
-import { ENTITIES } from './offers';
+import { BLOCKED_COUNTRIES, ENTITIES } from './offers';
 
 /**
  * Registro de mercados. El sitio es monolingüe —todo en español— así que un
@@ -9,10 +9,12 @@ import { ENTITIES } from './offers';
  * Cada país genera una página en /{code}/. Añadir un mercado = añadir un
  * objeto aquí. Nada más.
  *
- * ⚠️ Antes de añadir uno, comprueba que no está en BLOCKED_COUNTRIES. La
- * lista de Exness es larga y cubre toda la UE: España, en concreto, NO es un
- * mercado posible, por mucho que sea el mayor mercado hispanohablante de
- * Europa. Exness no abre cuentas a residentes españoles.
+ * ⚠️ Antes de añadir uno, comprueba que no está en BLOCKED_COUNTRIES. Ya no
+ * hace falta hacerlo de memoria: assertMarketsAllowed(), al final de este
+ * archivo, rompe el build si un mercado está bloqueado o apunta a una entidad
+ * que no atiende a minoristas. La lista de Exness es larga y cubre toda la
+ * UE: España, en concreto, NO es un mercado posible, por mucho que sea el
+ * mayor mercado hispanohablante de Europa.
  */
 export interface Country {
   /** ISO-3166 alpha-2 en minúsculas — también es el slug de URL */
@@ -34,8 +36,13 @@ export interface Country {
 }
 
 /**
- * Los 17 mercados hispanoamericanos. Todos los atiende Exness (SC) Ltd desde
+ * Los 15 mercados hispanoamericanos. Todos los atiende Exness (SC) Ltd desde
  * Seychelles: ninguno tiene entidad local, y por eso todos comparten `global`.
+ *
+ * Eran 17 hasta la revisión de 2026-08: Uruguay y Nicaragua salieron porque
+ * Exness dejó de aceptar residentes de ambos países. No es una decisión
+ * editorial — mantener sus landings habría sido enviar tráfico a un registro
+ * que rechaza al visitante en el primer paso.
  *
  * Los métodos de pago sí son propios de cada país y son el dato con más peso
  * comercial de este archivo — SPEI en México o PSE en Colombia deciden más
@@ -66,15 +73,11 @@ export const COUNTRIES: Country[] = [
     payments: ['Transferencia local', 'Visa/Mastercard', 'Skrill', 'USDT'], assets: ['Oro', 'US30', 'NAS100'], tier: 2 },
   { code: 'do', name: 'República Dominicana', entity: 'global', currency: 'DOP',
     payments: ['Visa/Mastercard', 'Skrill', 'USDT'], assets: ['Oro', 'US500', 'EUR/USD'], tier: 3 },
-  { code: 'uy', name: 'Uruguay', entity: 'global', currency: 'UYU',
-    payments: ['Transferencia local', 'Visa/Mastercard', 'Skrill', 'USDT'], assets: ['Oro', 'US30', 'EUR/USD'], tier: 3 },
   { code: 'py', name: 'Paraguay', entity: 'global', currency: 'PYG',
     payments: ['Visa/Mastercard', 'Skrill', 'USDT'], assets: ['Oro', 'Soja', 'US500'], tier: 3 },
   { code: 'sv', name: 'El Salvador', entity: 'global', currency: 'USD',
     payments: ['Visa/Mastercard', 'Skrill', 'USDT'], assets: ['BTC/USD', 'Oro', 'US30'], tier: 3 },
   { code: 'hn', name: 'Honduras', entity: 'global', currency: 'HNL',
-    payments: ['Visa/Mastercard', 'Skrill', 'USDT'], assets: ['Oro', 'US500', 'EUR/USD'], tier: 3 },
-  { code: 'ni', name: 'Nicaragua', entity: 'global', currency: 'NIO',
     payments: ['Visa/Mastercard', 'Skrill', 'USDT'], assets: ['Oro', 'US500', 'EUR/USD'], tier: 3 },
 ];
 
@@ -110,7 +113,7 @@ export function scaledLeverageAllowed(country: Country): boolean {
 /**
  * Valor de hreflang de la página: español + región, p. ej. "es-MX".
  *
- * Es la anotación que corresponde a este sitio: 17 páginas en el mismo idioma
+ * Es la anotación que corresponde a este sitio: 15 páginas en el mismo idioma
  * dirigidas a países distintos. Sin la región competirían entre sí en vez de
  * servirse cada una a su audiencia.
  */
@@ -122,3 +125,43 @@ export function countryHreflang(country: Country): string {
 export function countryLocale(country: Country): string {
   return `es_${country.code.toUpperCase()}`;
 }
+
+/**
+ * Comprobación de coherencia que se ejecuta en cada build.
+ *
+ * Dos formas de perder dinero de golpe y en silencio, y las dos son un
+ * descuido de una línea en este archivo:
+ *
+ *   1. Dejar un mercado cuyos residentes Exness ya no acepta. La landing se
+ *      publica, posiciona, recibe tráfico y lo manda a un formulario que
+ *      rechaza al visitante. Es exactamente lo que pasaba con /uy/ y /ni/.
+ *   2. Apuntar un mercado a una entidad que sólo atiende a clientes
+ *      profesionales. La página prometería condiciones que ese visitante no
+ *      puede contratar.
+ *
+ * Ninguna de las dos da error en tiempo de ejecución ni se ve en la página, y
+ * por eso se comprueban aquí: el módulo se importa en todas las rutas, así
+ * que un fallo revienta el build en vez de llegar a producción.
+ */
+function assertMarketsAllowed(): void {
+  const blocked = new Set<string>(BLOCKED_COUNTRIES.map((c) => c.toLowerCase()));
+
+  for (const country of COUNTRIES) {
+    if (blocked.has(country.code)) {
+      throw new Error(
+        `[countries] ${country.name} (${country.code}) está en BLOCKED_COUNTRIES: ` +
+        'Exness no acepta a sus residentes. Elimina el mercado de COUNTRIES ' +
+        'y su entrada de LOCAL_COPY en vez de publicar una landing que no convierte.',
+      );
+    }
+
+    if (!ENTITIES[country.entity].retailClients) {
+      throw new Error(
+        `[countries] ${country.name} apunta a ${ENTITIES[country.entity].legalName}, ` +
+        'que sólo atiende a clientes profesionales. Ningún mercado minorista puede apuntar ahí.',
+      );
+    }
+  }
+}
+
+assertMarketsAllowed();

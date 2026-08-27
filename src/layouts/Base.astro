@@ -18,6 +18,20 @@ interface Props {
   description: string;
   /** Ruta canónica sin dominio, p. ej. "mx" o "blog/mi-articulo" */
   path: string;
+  /**
+   * Tipo de Open Graph. Un artículo del blog TIENE que declararse `article`:
+   * es lo que hace que al compartirlo salga con autor y fecha en vez de como
+   * una página cualquiera, y lo que leen los agregadores para fechar el
+   * contenido. Todo lo demás del sitio es `website`.
+   */
+  ogType?: 'website' | 'article';
+  /** Sólo para `ogType="article"`: alimenta article:published_time. */
+  published?: Date;
+  /** Sólo para `ogType="article"`: alimenta article:modified_time. */
+  modified?: Date;
+  /** Sólo para `ogType="article"`: autor y etiquetas del artículo. */
+  author?: string;
+  tags?: string[];
   alternates?: Alternate[];
   /** Objeto JSON-LD ya construido con graph() */
   schema?: Record<string, unknown>;
@@ -44,6 +58,11 @@ const {
   title,
   description,
   path,
+  ogType = 'website',
+  published,
+  modified,
+  author,
+  tags = [],
   alternates = [],
   schema,
   theme = 'paper',
@@ -80,17 +99,40 @@ const robots = noindex
       <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
     ))}
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={SITE.brand} />
     <meta property="og:locale" content={ogLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={desc} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={`${SITE.url}${SITE.ogImage}`} />
+    {/*
+      Las medidas de la imagen no son opcionales para quien la consume: sin
+      ellas, Facebook y LinkedIn tienen que descargar el archivo antes de
+      decidir cómo maquetar la tarjeta, y la primera vez que se comparte un
+      enlace sale sin imagen.
+    */}
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content={`${SITE.brand} — ${title}`} />
+
+    {ogType === 'article' && published && (
+      <meta property="article:published_time" content={published.toISOString()} />
+    )}
+    {ogType === 'article' && (modified ?? published) && (
+      <meta property="article:modified_time" content={(modified ?? published)!.toISOString()} />
+    )}
+    {ogType === 'article' && author && <meta property="article:author" content={author} />}
+    {ogType === 'article' && tags.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    ))}
+
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={desc} />
     <meta name="twitter:image" content={`${SITE.url}${SITE.ogImage}`} />
+    <meta name="twitter:image:alt" content={`${SITE.brand} — ${title}`} />
 
     <meta name="theme-color" content={theme === 'paper' ? '#ffffff' : SITE.themeColor} />
     <meta name="format-detection" content="telephone=no" />
@@ -106,16 +148,24 @@ const robots = noindex
     {VERIFICATION.yandex && <meta name="yandex-verification" content={VERIFICATION.yandex} />}
 
     {/*
-      El único dominio de terceros al que va a saltar el visitante es el del
-      redirector de socios de Exness. Resolver el DNS antes de que pulse le
-      quita al salto un par de vueltas de red, que en móvil se nota.
+      Tres hosts de terceros, y cada uno con el trato que le corresponde.
 
-      Aquí había un preconnect a las creatividades de PipAffiliates, que es la
-      red de XM y no la de este bróker: abría una conexión TLS a un host al
-      que esta web no pide nada. Cuando EXNESS_BANNERS tenga piezas, añade el
-      preconnect al host de sus imágenes.
+      El redirector de socios sólo necesita el DNS resuelto: el visitante no
+      pide nada de ahí hasta que pulsa, pero cuando pulsa le ahorramos una
+      vuelta de red que en móvil se nota.
+
+      El CDN de creatividades sí sirve imágenes en la propia página, así que
+      va con preconnect completo —DNS, TCP y TLS por adelantado— porque el
+      banner se pide en cuanto entra en pantalla.
+
+      Las incrustaciones de vídeo se quedan en dns-prefetch a propósito: el
+      iframe es perezoso y abrir su TLS de entrada gastaría una conexión que
+      la mayoría de visitantes no llega a usar.
     */}
     <link rel="dns-prefetch" href="https://one.exnessonelink.com" />
+    <link rel="preconnect" href="https://d3dpet1g0ty5ed.cloudfront.net" crossorigin />
+    <link rel="dns-prefetch" href="https://d3dpet1g0ty5ed.cloudfront.net" />
+    <link rel="dns-prefetch" href="https://brandfolder.com" />
 
     {schema && (
       <script
@@ -128,8 +178,13 @@ const robots = noindex
     <script is:inline>
       // dataLayer disponible antes de cualquier interacción, para no perder
       // los clics que ocurren mientras el consentimiento sigue pendiente.
+      //
+      // La función se llamaba `xmTrack`: era un resto del sitio de XM sobre el
+      // que se montó esta arquitectura. Nada aquí es de XM, y un identificador
+      // global con la marca de otro bróker es justo lo que no conviene tener
+      // en el HTML de un sitio de socio de Exness.
       window.dataLayer = window.dataLayer || [];
-      window.xmTrack = function (name, params) {
+      window.track = function (name, params) {
         window.dataLayer.push(Object.assign({ event: name }, params || {}));
       };
     </script>

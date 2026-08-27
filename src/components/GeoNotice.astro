@@ -254,7 +254,7 @@ const data = {
         go.dataset.marketPick = loc.toLowerCase();
         el.hidden = false;
 
-        window.xmTrack?.('geo_suggest', { country: loc });
+        window.track?.('geo_suggest', { country: loc });
       })
       .catch(() => {});
 

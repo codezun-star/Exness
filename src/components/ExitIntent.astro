@@ -252,7 +252,7 @@ const leverage = (entity ?? DEFAULT_ENTITY).maxLeverage;
       }
 
       modal.showModal();
-      window.xmTrack?.('exit_intent', { trigger });
+      window.track?.('exit_intent', { trigger });
     };
 
     // Salida real: sólo con puntero, cuando el cursor cruza el borde superior

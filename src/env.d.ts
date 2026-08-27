@@ -7,7 +7,7 @@
 declare global {
   interface Window {
     dataLayer: unknown[];
-    xmTrack?: (event: string, params?: Record<string, unknown>) => void;
+    track?: (event: string, params?: Record<string, unknown>) => void;
     gtag?: (...args: unknown[]) => void;
     fbq?: (...args: unknown[]) => void;
     _fbq?: unknown;

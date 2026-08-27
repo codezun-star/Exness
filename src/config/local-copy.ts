@@ -1,7 +1,7 @@
 /**
  * Texto propio de cada mercado.
  *
- * Es lo único que distingue de verdad una landing de otra: sin esto, las 17
+ * Es lo único que distingue de verdad una landing de otra: sin esto, las 15
  * páginas comparten el 96 % del vocabulario y sólo cambian el topónimo, la
  * divisa y el nombre del regulador. Con esto, cada una responde preguntas que
  * ninguna otra puede responder — que es lo que se busca en la cola larga
@@ -50,10 +50,6 @@ export const LOCAL_COPY: Record<string, string[]> = {
     'El Salvador dolarizó su economía en 2001, así que el depósito no pasa por conversión de divisa: entra directamente en la moneda de la cuenta. Es una de las razones por las que operar desde aquí resulta más sencillo que en la mayoría de países de la región.',
     'Exness opera con Exness (SC) Ltd y licencia de la FSA de Seychelles, sin supervisión local. Además del oro y el US30, BTC/USD tiene un seguimiento notable entre los operadores salvadoreños.',
   ],
-  uy: [
-    'Exness atiende a Uruguay desde Exness (SC) Ltd, con licencia de la FSA de Seychelles y sin registro ante el Banco Central del Uruguay, que es quien supervisa a los intermediarios de valores locales.',
-    'La transferencia bancaria local y la tarjeta son las vías habituales, con conversión de pesos uruguayos a dólares al ingresar. Oro, US30 y EUR/USD concentran el interés.',
-  ],
   cr: [
     'La supervisión del mercado de valores costarricense corresponde a la SUGEVAL. Exness no está inscrita ahí: opera desde Exness (SC) Ltd con licencia de la FSA de Seychelles.',
     'El depósito se hace con tarjeta, Skrill o USDT, y el colón se convierte a dólares al entrar. El perfil local es conservador en instrumentos: oro, US500 y EUR/USD.',
@@ -77,10 +73,6 @@ export const LOCAL_COPY: Record<string, string[]> = {
   hn: [
     'Exness atiende a Honduras desde Exness (SC) Ltd, con licencia de la FSA de Seychelles y sin inscripción ante la Comisión Nacional de Bancos y Seguros.',
     'Tarjeta, Skrill y USDT son las vías de depósito habituales; el lempira se convierte a dólares al entrar. Oro, US500 y EUR/USD son los instrumentos más seguidos.',
-  ],
-  ni: [
-    'Exness opera desde Exness (SC) Ltd con licencia de la FSA de Seychelles, sin registro ante un supervisor nicaragüense.',
-    'El ingreso se hace con tarjeta, Skrill o USDT, con conversión del córdoba a dólares. Oro, US500 y EUR/USD concentran el interés local.',
   ],
 };
 

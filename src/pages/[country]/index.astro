@@ -14,6 +14,7 @@ import Platforms from '../../components/Platforms.astro';
 import Faq from '../../components/Faq.astro';
 import CountryGrid from '../../components/CountryGrid.astro';
 import CtaBand from '../../components/CtaBand.astro';
+import Video from '../../components/Video.astro';
 
 import {
   COUNTRIES, countryEntity, siblingsOf, type Country,
@@ -131,9 +132,15 @@ const schema = graph(
   )}
   <Payments country={country} />
 
+  {/*
+    Banda ancha inmediatamente después de los métodos de pago locales. En
+    LATAM ese bloque es el que más convierte de toda la landing —saber que
+    puedes ingresar por SPEI o por PSE pesa más que cualquier spread—, así que
+    el hueco de mayor formato va justo detrás.
+  */}
   <div class="band-paper-2">
     <div class="wrap">
-      <Banner seed={`market-top-${country.code}`} double />
+      <Banner format="billboard" seed={`market-top-${country.code}`} />
     </div>
   </div>
 
@@ -142,9 +149,26 @@ const schema = graph(
   <Accounts country={country} />
   <Steps country={country} />
 
+  {/*
+    El vídeo cierra el recorrido de la landing: entidad, pagos, ventajas,
+    cuentas y pasos ya están leídos. La semilla lleva el código de país, así
+    que a mercados distintos les toca pieza distinta y el sitio no repite el
+    mismo vídeo quince veces.
+  */}
+  <section class="band band-tight band-paper">
+    <div class="wrap">
+      <Video
+        seed={`market-video-${country.code}`}
+        country={country}
+        title={t('video.titleCountry')}
+        source={`video-${country.code}`}
+      />
+    </div>
+  </section>
+
   <div class="band-paper-2">
     <div class="wrap">
-      <Banner seed={`market-${country.code}`} double />
+      <Banner format="square" seed={`market-${country.code}`} double />
     </div>
   </div>
 

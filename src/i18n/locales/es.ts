@@ -3,9 +3,9 @@
  * texto que no vive en el blog ni en local-copy.ts.
  *
  * Placeholders disponibles, resueltos por useT(country) sin pasarlos a mano:
- *   {country} {leverage} {min} {minLocal} {spread} {instruments} {countries}
- *   {brand} {year} {currency} {entity} {regulator} {license} {clients}
- *   {volume} {withdrawals} {years}
+ *   {country} {leverage} {min} {minWallet} {minPro} {spread} {instruments}
+ *   {countries} {brand} {year} {currency} {entity} {regulator} {license}
+ *   {clients} {volume} {withdrawals} {years}
  *
  * ⚠️ Exness NO ofrece bonos de bienvenida ni de depósito, y lo dice de forma
  * expresa. Cualquier texto que insinúe un bono es publicidad falsa y motivo
@@ -57,7 +57,7 @@ const es = {
   'why.1.t': 'Retiros instantáneos 24/7',
   'why.1.d': 'Es el argumento propio de la casa y el que más la diferencia: las solicitudes se procesan de forma automática, sin intervención manual, también fines de semana y festivos. El tiempo que tarde en aparecer el dinero depende ya de tu banco o monedero, no del bróker.',
   'why.2.t': 'Empieza desde {min} USD',
-  'why.2.d': 'Uno de los mínimos más bajos del mercado con tarjeta o cripto; desde {minLocal} USD con métodos locales. Pruebas la plataforma con dinero real sin arriesgar capital serio.',
+  'why.2.d': '{min} USD es el mínimo de las cuentas Standard y Standard Cent, y sirve igual con tarjeta, con criptomoneda o con el método local de tu país. Algunos monederos electrónicos bajan hasta {minWallet} USD. Las cuentas profesionales —Pro, Raw Spread y Zero— piden {minPro} USD de entrada.',
   'why.3.t': 'Spreads desde {spread} pips',
   'why.3.d': 'Las cuentas Raw Spread y Zero arrancan en 0,0 pips y cobran comisión por lote; Standard y Pro no cobran comisión y llevan el coste dentro del spread. Son dos formas de pagar lo mismo, y cuál sale mejor depende de tu volumen.',
   'why.4.t': 'Cero comisión de depósito y retiro',
@@ -77,7 +77,7 @@ const es = {
   'accounts.col.lot': 'Tamaño del lote',
   'accounts.recommended': 'Más elegida',
   'accounts.cta': 'Abrir esta cuenta',
-  'accounts.note': 'Las cuentas estándar —Standard Cent y Standard— no cobran comisión: el coste va en el spread. Las profesionales —Pro, Raw Spread y Zero— piden 200 USD de entrada; Pro tampoco cobra comisión, y Raw Spread y Zero sí a cambio de arrancar en 0,0 pips. La Cent opera con lotes de 1.000 unidades, pensada para dimensionar posiciones con capital reducido. Los spreads son variables y cambian según el instrumento y la liquidez del momento. Todas incluyen MT4, MT5, Exness Terminal y protección de saldo negativo.',
+  'accounts.note': 'Las cuentas estándar —Standard Cent y Standard— no cobran comisión: el coste va entero en el spread, y entran desde {min} USD. Las profesionales piden {minPro} USD; Pro tampoco cobra comisión y arranca en 0,1 pips, mientras que Raw Spread y Zero arrancan en 0,0 pips y cobran comisión por lote — hasta 3,50 USD por lado en Raw Spread y desde 0,02 USD por lado en Zero. La Cent opera con lotes de 1.000 unidades, pensada para dimensionar posiciones con capital reducido. Los spreads son variables y cambian según el instrumento y la liquidez del momento. Todas incluyen MT4, MT5, Exness Terminal y protección de saldo negativo. Datos comprobados en agosto de {year}: confirma los vigentes en tu área de cliente antes de depositar.',
 
   // ── Pasos ─────────────────────────────────────────────────────
   'steps.title': 'Cómo abrir tu cuenta',
@@ -87,7 +87,7 @@ const es = {
   'steps.2.t': 'Verifica tu identidad',
   'steps.2.d': 'Sube tu documento de identidad y un comprobante de domicilio. La validación suele completarse el mismo día y es lo que habilita los retiros.',
   'steps.3.t': 'Deposita desde {min} USD',
-  'steps.3.d': 'Elige el método de tu país. Tarjeta, monedero y cripto se acreditan de forma instantánea; los métodos locales arrancan en {minLocal} USD.',
+  'steps.3.d': 'Elige el método de tu país. Tarjeta, monedero, cripto y transferencia local se acreditan en minutos y el bróker no cobra comisión por el ingreso. El mínimo son {min} USD en las cuentas Standard.',
   'steps.4.t': 'Empieza a operar',
   'steps.4.d': 'Abre MT5, el Exness Terminal desde el navegador o la app Exness Trade, y aplica tu plan de gestión de riesgo desde la primera posición.',
   'steps.cta': 'Empezar el registro',
@@ -117,7 +117,7 @@ const es = {
   'adv.swapfree.t': 'Cuentas sin swap',
   'adv.swapfree.d': 'Sobre la mayoría de divisas y materias primas, sin cuota administrativa sustitutoria.',
   'adv.entry.t': 'Entrada desde {min} USD',
-  'adv.entry.d': 'Con tarjeta o cripto. Desde {minLocal} USD con los métodos locales de tu país.',
+  'adv.entry.d': 'En cuentas Standard, con cualquier método. {minPro} USD si vas directo a una cuenta profesional.',
 
   // ── Comparativa ───────────────────────────────────────────────
   'compare.title': 'Exness frente a un bróker medio',
@@ -142,7 +142,7 @@ const es = {
   'faq.q2': '¿Desde qué países no se puede abrir cuenta en Exness?',
   'faq.a2': 'La lista de Exness es más larga que la de la mayoría de brókeres. No acepta residentes de Estados Unidos ni de sus territorios, de Canadá, de prácticamente todo el Espacio Económico Europeo —España incluida—, del Reino Unido, de Australia ni de Nueva Zelanda, además de las jurisdicciones sancionadas internacionalmente. El motivo en el caso europeo no es una sanción: sus entidades de la UE dejaron de atender a clientes minoristas. América Latina sí está cubierta en su totalidad, y por eso los 17 mercados de este sitio son hispanoamericanos y no está España.',
   'faq.q3': '¿Cuál es el depósito mínimo en Exness?',
-  'faq.a3': 'Desde {min} USD con tarjeta o criptomoneda, y desde {minLocal} USD con los métodos de pago locales, para las cuentas Standard Cent y Standard. Las cuentas profesionales —Pro, Raw Spread y Zero— exigen 200 USD.',
+  'faq.a3': 'El mínimo publicado por Exness es {min} USD para las cuentas Standard y Standard Cent, y vale igual con tarjeta, criptomoneda o método de pago local. Algunos monederos electrónicos —Skrill, Neteller, Perfect Money— admiten ingresos desde {minWallet} USD, pero eso es el suelo de esos métodos concretos, no el mínimo general de la cuenta. Las cuentas profesionales —Pro, Raw Spread y Zero— exigen {minPro} USD. Exness no cobra comisión por el depósito en ningún caso.',
   'faq.a4': 'Exness procesa los retiros de forma instantánea y automática, las 24 horas y todos los días del año, sin intervención manual. Lo que puede tardar es la acreditación en destino, y eso ya depende de tu banco o de tu monedero, no del bróker. Exness no cobra comisión por el retiro.',
   'faq.q4': '¿Cuánto tarda un retiro en Exness?',
   'faq.q5': '¿Qué apalancamiento ofrece Exness?',
@@ -243,6 +243,12 @@ const es = {
   '404.title': 'Página no encontrada',
   '404.sub': 'El enlace no existe o cambió de dirección.',
   '404.cta': 'Volver al inicio',
+
+  // ── Vídeo de marca ────────────────────────────────────────────
+  'video.title': 'Mira cómo funciona Exness antes de abrir cuenta',
+  'video.titleCountry': 'Exness en {country}: míralo antes de decidir',
+  'video.titleBlog': 'Dos minutos de vídeo antes de seguir leyendo',
+  'video.cta': 'Abrir cuenta después del vídeo',
 
   'aeo.answer': 'Respuesta corta',
   'aeo.takeaways': 'Puntos clave',

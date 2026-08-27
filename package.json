@@ -1,9 +1,9 @@
 {
-  "name": "exness-codezun",
+  "name": "exness-inversax",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "exness.codezun.com — sitio de afiliacion por pais para Exness",
+  "description": "exness.inversax.com — sitio de afiliacion por pais para Exness",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",

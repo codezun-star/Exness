@@ -13,3 +13,15 @@
 /pe      /pe/    301
 /ar      /ar/    301
 /blog    /blog/  301
+
+# Mercados retirados en la revisión de 2026-08.
+#
+# Exness dejó de aceptar residentes de Uruguay y de Nicaragua, así que sus
+# landings se eliminaron. Estas dos reglas no son cortesía: si las páginas ya
+# estaban indexadas, un 404 tira la autoridad que hubieran acumulado y deja al
+# visitante sin salida. Un 301 a la portada la conserva y le ofrece los quince
+# mercados que sí puede usar.
+/uy      /   301
+/uy/*    /   301
+/ni      /   301
+/ni/*    /   301

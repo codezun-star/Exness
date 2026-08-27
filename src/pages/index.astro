@@ -12,6 +12,7 @@ import Platforms from '../components/Platforms.astro';
 import Faq from '../components/Faq.astro';
 import CountryGrid from '../components/CountryGrid.astro';
 import CtaBand from '../components/CtaBand.astro';
+import Video from '../components/Video.astro';
 
 import { COUNTRIES } from '../config/countries';
 import { useT, countryPath, DEFAULT_ENTITY, type UIKey } from '../i18n/ui';
@@ -83,18 +84,36 @@ const schema = graph(
   <Compare />
   <Steps />
 
+  {/*
+    Banda ancha justo después de los pasos de alta: el visitante acaba de leer
+    que el registro son tres minutos, que es el punto de la página con más
+    intención y el sitio natural del formato más grande del panel.
+  */}
   <div class="band-paper-2">
     <div class="wrap">
-      <Banner seed="home-mid" double />
+      <Banner format="billboard" seed="home-mid" />
     </div>
   </div>
 
   <Platforms />
+
+  {/*
+    El vídeo va DESPUÉS de plataformas y ANTES de las preguntas, no al revés.
+    Quien ha llegado hasta aquí ya tiene los datos y le queda la duda de si
+    esto va en serio; un vídeo de marca resuelve esa duda mucho mejor que otro
+    párrafo, y quien todavía tenga preguntas concretas las encuentra debajo.
+  */}
+  <section class="band band-tight band-paper">
+    <div class="wrap">
+      <Video seed="home-video" source="home-video" />
+    </div>
+  </section>
+
   <Faq />
 
   <div class="band-paper-2">
     <div class="wrap">
-      <Banner seed="home-late" double />
+      <Banner format="square" seed="home-late" double />
     </div>
   </div>
 

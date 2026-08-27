@@ -6,7 +6,9 @@ import { PARTNER_CODE } from '../../config/affiliate';
 import { LEGAL_PAGES, type LegalPage } from '../../config/legal';
 import { useT, legalPath, type UIKey } from '../../i18n/ui';
 import { abs } from '../../lib/seo';
-import { graph, organization, website, webPage, breadcrumbs } from '../../lib/schema';
+import {
+  graph, organization, website, webPage, brokerEntity, breadcrumbs,
+} from '../../lib/schema';
 
 export function getStaticPaths() {
   return LEGAL_PAGES.map((page) => ({ params: { page } }));
@@ -99,6 +101,7 @@ const blocks: Record<LegalPage, Block[]> = {
 const schema = graph(
   organization(),
   website(),
+  brokerEntity(),
   webPage({ url: abs(url), title, description }),
   breadcrumbs([
     { name: t('nav.home'), path: '' },

@@ -4,12 +4,14 @@
  *
  * ⚠️ PROCEDENCIA DE LAS CIFRAS — LÉELO ANTES DE PUBLICAR
  *
- * Este archivo se redactó el 2026-08-19 a partir de fuentes secundarias
- * (registros públicos de los reguladores, el acuerdo de cliente de Exness (SC)
- * Ltd alojado en my.exness.com y reseñas sectoriales). El dominio exness.com
- * y su centro de ayuda están bloqueados por la política de red del entorno en
- * el que se construyó el sitio, así que NO se pudieron contrastar contra la
- * fuente primaria.
+ * Última revisión: 2026-08-26.
+ *
+ * Redactado a partir de fuentes secundarias (registros públicos de los
+ * reguladores, el acuerdo de cliente de Exness (SC) Ltd, el centro de ayuda
+ * de socios y reseñas sectoriales contrastadas entre sí). exness.com y
+ * get.exness.help devuelven 403 a cualquier petición automatizada, así que
+ * NO se pudieron leer contra la fuente primaria: se contrastó cada cifra
+ * entre al menos dos fuentes independientes y se redondeó hacia abajo.
  *
  * Cada bloque lleva marcada su procedencia:
  *   [REG]  verificado contra registro regulatorio o documento legal de Exness
@@ -18,6 +20,19 @@
  * Antes de publicar, abre exness.com y confirma uno por uno los marcados
  * [SEC]. Repite la revisión cada trimestre: publicar condiciones caducadas es
  * causa de cierre de la cuenta de socio.
+ *
+ * CAMBIOS DE LA REVISIÓN 2026-08-26 (importan, no son cosméticos):
+ *   · El depósito mínimo estaba invertido. La cifra de titular de Exness es
+ *     10 USD (tarjeta, cripto y métodos locales, cuentas Standard); 1 USD es
+ *     el suelo de algunos monederos electrónicos, no el mínimo general.
+ *   · La comisión de la cuenta Zero es «desde 0,02 USD por lado», no
+ *     «variable»: es un dato publicado y es el argumento de venta de esa
+ *     cuenta frente a Raw Spread.
+ *   · Uruguay y Nicaragua pasaron a BLOCKED_COUNTRIES: Exness dejó de
+ *     aceptar residentes de ambos. Sus landings se eliminaron.
+ *   · Se añadieron al bloqueo Bahamas, Cuba (ya estaba), Rusia, Bielorrusia,
+ *     Malasia, Singapur, Corea del Sur, Birmania y varias jurisdicciones
+ *     europeas y africanas que faltaban.
  */
 
 /** Entidades legales del grupo Exness. El país determina cuál aplica. */
@@ -101,7 +116,8 @@ export const ENTITIES: Record<EntityId, Entity> = {
    * [REG] Chipre. Está aquí para poder citarla como licencia del grupo, no
    * para dirigirle mercados: Exness (Cy) Ltd dejó de aceptar minoristas y hoy
    * sólo atiende a clientes profesionales. Ningún país de COUNTRIES debe
-   * apuntar a esta entidad — ver la comprobación al final del archivo.
+   * apuntar a esta entidad — lo comprueba assertMarketsAllowed() en
+   * src/config/countries.ts, que rompe el build si alguno lo hace.
    */
   cysec: {
     id: 'cysec',
@@ -116,6 +132,23 @@ export const ENTITIES: Record<EntityId, Entity> = {
     compensation: 'ICF hasta 20.000 €',
   },
 };
+
+/**
+ * Resto de licencias del grupo Exness. NO son entidades a las que este sitio
+ * dirija mercados —para eso está ENTITIES— pero sí son datos citables: la
+ * pregunta «¿Exness es confiable?» se responde mucho mejor enumerando el
+ * conjunto de la estructura regulatoria que citando una sola licencia.
+ *
+ * [SEC] Contrastado en 2026-08 entre reseñas sectoriales y los registros
+ * públicos de cada regulador. Confirmar en exness.com/regulation antes de
+ * publicar cambios.
+ */
+export const GROUP_LICENCES = [
+  { legalName: 'Exness (VG) Ltd', regulator: 'FSC (Islas Vírgenes Británicas)', license: 'SIBA/L/20/1133' },
+  { legalName: 'Exness (KE) Ltd', regulator: 'CMA (Kenia)', license: '162' },
+  { legalName: 'Exness (MU) Ltd', regulator: 'FSC (Mauricio)', license: 'GB20025294' },
+  { legalName: 'Exness (UK) Ltd', regulator: 'FCA (Reino Unido) · sin minoristas británicos', license: '730729' },
+] as const;
 
 /** Tipos de cuenta. `key` identifica la cuenta en el copy y en el schema. */
 export interface AccountType {
@@ -134,38 +167,63 @@ export interface AccountType {
  * (Standard Cent y Standard), sin comisión y con depósito mínimo bajo, y las
  * profesionales (Pro, Raw Spread y Zero), con 200 USD de entrada.
  *
- * Confirmado entre fuentes: Raw Spread cobra hasta 7 USD por lote ida y
- * vuelta —3,5 por lado— y arranca en 0,0 pips; Pro no cobra comisión y
- * arranca en 0,1. El spread de las dos cuentas estándar y la comisión exacta
- * de Zero varían por instrumento: por eso la tabla lleva nota al pie y no
- * promete un valor fijo. CONFIRMAR ambos contra exness.com.
+ * Confirmado entre fuentes (revisión 2026-08): Raw Spread cobra una comisión
+ * fija de hasta 3,50 USD por lote y por lado —7 USD ida y vuelta— y arranca
+ * en 0,0 pips; Zero arranca también en 0,0 pips en los 30 instrumentos más
+ * negociados y cobra desde 0,02 USD por lado, que es su argumento frente a
+ * Raw Spread; Pro no cobra comisión y arranca en 0,1.
+ *
+ * El spread de las dos cuentas estándar es variable por instrumento: por eso
+ * la tabla lleva nota al pie y no promete un valor fijo.
  */
 export const ACCOUNTS: AccountType[] = [
-  { key: 'cent',      name: 'Standard Cent', minDeposit: 10,  spreadFrom: '0.3', commission: '0',                     lotSize: '1.000' },
-  { key: 'standard',  name: 'Standard',      minDeposit: 10,  spreadFrom: '0.3', commission: '0',                     lotSize: '100.000', featured: true },
-  { key: 'pro',       name: 'Pro',           minDeposit: 200, spreadFrom: '0.1', commission: '0',                     lotSize: '100.000' },
-  { key: 'rawspread', name: 'Raw Spread',    minDeposit: 200, spreadFrom: '0.0', commission: 'Hasta 3,5 USD por lado', lotSize: '100.000' },
-  { key: 'zero',      name: 'Zero',          minDeposit: 200, spreadFrom: '0.0', commission: 'Variable',              lotSize: '100.000' },
+  { key: 'cent',      name: 'Standard Cent', minDeposit: 10,  spreadFrom: '0.3', commission: '0',                      lotSize: '1.000' },
+  { key: 'standard',  name: 'Standard',      minDeposit: 10,  spreadFrom: '0.3', commission: '0',                      lotSize: '100.000', featured: true },
+  { key: 'pro',       name: 'Pro',           minDeposit: 200, spreadFrom: '0.1', commission: '0',                      lotSize: '100.000' },
+  { key: 'rawspread', name: 'Raw Spread',    minDeposit: 200, spreadFrom: '0.0', commission: 'Hasta 3,50 USD por lado', lotSize: '100.000' },
+  { key: 'zero',      name: 'Zero',          minDeposit: 200, spreadFrom: '0.0', commission: 'Desde 0,02 USD por lado', lotSize: '100.000' },
 ];
 
 /**
  * Cifras usadas en badges y prueba social. Sólo datos públicos de Exness.
  *
- * [SEC] Todas salvo el año de fundación proceden de reseñas sectoriales
- * coherentes entre sí. Son conservadoras a propósito —se redondea hacia
- * abajo— pero siguen necesitando confirmación en exness.com.
+ * [SEC] Todas salvo el año de fundación proceden de reseñas sectoriales y de
+ * los informes mensuales que Exness publica y que recoge la prensa del sector.
+ * Son conservadoras a propósito —se redondea hacia abajo— pero siguen
+ * necesitando confirmación en exness.com.
  */
 export const STATS = {
   instruments: '200+',
   countries: '100+',
-  /** Traders activos al mes, no cuentas abiertas: es la cifra que publica Exness. */
-  clients: '600.000+',
-  /** Volumen negociado al mes. «Billón» aquí es 10^12, en el sentido del español. */
+  /**
+   * Traders activos al mes, no cuentas abiertas: es la cifra que publica
+   * Exness. Los informes mensuales de 2026 se mueven entre 720.000 y 840.000;
+   * se publica el suelo redondeado hacia abajo.
+   */
+  clients: '750.000+',
+  /**
+   * Volumen negociado al mes. «Billón» aquí es 10^12, en el sentido del
+   * español. Los meses de 2026 se mueven por encima de 4 billones y han
+   * marcado máximos por encima de 5; se publica el suelo.
+   */
   volume: '4 billones USD',
   yearsActive: new Date().getFullYear() - 2008,
-  /** Con tarjeta o cripto. Los métodos locales arrancan en 10 USD. */
-  minDeposit: 1,
-  minDepositLocal: 10,
+  /**
+   * Depósito mínimo de titular: 10 USD en las cuentas Standard y Standard
+   * Cent, con tarjeta, criptomoneda o método local. Es la cifra que publica
+   * Exness y la única que se puede anunciar sin matices.
+   *
+   * ⚠️ Hasta la revisión de 2026-08 aquí había un 1 y el sitio anunciaba
+   * «desde 1 USD con tarjeta». Es falso: 1 USD es el suelo de algunos
+   * monederos electrónicos concretos, no el mínimo general, y anunciar un
+   * mínimo que el visitante no puede usar en su método de pago habitual es
+   * publicidad engañosa y motivo de revisión de la cuenta de socio.
+   */
+  minDeposit: 10,
+  /** Suelo de algunos monederos electrónicos (Skrill, Neteller, Perfect Money). */
+  minDepositWallet: 1,
+  /** Entrada de las cuentas profesionales: Pro, Raw Spread y Zero. */
+  minDepositPro: 200,
   executionSpeed: '<1 s',
   /** El argumento comercial nº1 de Exness, y es verificable. */
   withdrawals: 'Instantáneos 24/7',
@@ -215,32 +273,47 @@ export const ADVANTAGES: Advantage[] = [
  * página para ninguno de ellos, y si detecta que el visitante llega desde uno
  * marca el documento con `data-blocked-region` en vez de sugerirle nada.
  *
- * [SEC] Compilada el 2026-08-19 desde la lista que publica el centro de ayuda
- * de socios de Exness. Es MUCHO más larga que la de un bróker como XM, y la
- * diferencia no es un detalle: además de Estados Unidos y sus territorios, de
- * Canadá y de las jurisdicciones sancionadas, Exness no acepta residentes de
- * prácticamente todo el Espacio Económico Europeo ni del Reino Unido, porque
- * sus entidades europeas dejaron de atender a minoristas.
+ * [SEC] Revisada el 2026-08-26 contra la lista del centro de ayuda de Exness
+ * y de su centro de ayuda de socios. Es MUCHO más larga que la de un bróker
+ * como XM, y la diferencia no es un detalle: además de Estados Unidos y sus
+ * territorios, de Canadá y de las jurisdicciones sancionadas, Exness no
+ * acepta residentes de prácticamente todo el Espacio Económico Europeo ni
+ * del Reino Unido, porque sus entidades europeas dejaron de atender a
+ * minoristas.
  *
  * Consecuencia directa para este sitio: ESPAÑA NO ES UN MERCADO. No es una
  * decisión de prudencia publicitaria como lo sería con otro bróker — es que
  * Exness no abre cuentas a residentes españoles, así que una landing
  * dirigida a España enviaría tráfico a un registro que va a rebotar.
  *
+ * Y desde la revisión de 2026-08, TAMPOCO URUGUAY NI NICARAGUA. Los dos
+ * tenían landing en este sitio y los dos figuran ahora entre los países cuyos
+ * residentes Exness no acepta, junto con Cuba y Bahamas. Las dos páginas se
+ * eliminaron: mantenerlas habría sido pagar tráfico para llevarlo a un
+ * formulario que rechaza al visitante en el primer paso.
+ *
+ * La coherencia entre esta lista y COUNTRIES la comprueba el propio build:
+ * ver assertMarketsAllowed() al final de src/config/countries.ts.
+ *
  * ⚠️ Esta lista cambia. Confírmala en el centro de ayuda de socios antes de
  * publicar y cada trimestre.
  */
 export const BLOCKED_COUNTRIES = [
-  // América del Norte y territorios de EE. UU.
-  'US', 'CA', 'GL', 'PR', 'VI', 'GU', 'AS', 'MP', 'MH',
-  // Espacio Económico Europeo, Reino Unido y microestados
+  // América del Norte, Caribe y territorios de EE. UU.
+  'US', 'CA', 'GL', 'PR', 'VI', 'GU', 'AS', 'MP', 'MH', 'UM',
+  'CU', 'BS', 'MQ', 'GP', 'BL', 'MF',
+  // América del Sur y Central
+  'UY', 'NI',
+  // Espacio Económico Europeo, Reino Unido, Balcanes y microestados
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
   'HU', 'IS', 'IE', 'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'MC', 'NL', 'NO',
   'PL', 'PT', 'RO', 'SM', 'SK', 'SI', 'ES', 'SE', 'CH', 'GB', 'VA',
-  // Oceanía
+  'AL', 'AD', 'BA', 'MK', 'FO', 'AX', 'BY', 'RU',
+  // Asia y Oceanía
+  'MY', 'SG', 'KR', 'MM', 'AF',
   'AU', 'NZ', 'VU', 'FJ', 'PW', 'WS', 'KI', 'FM', 'NF', 'TV',
   // África
-  'SC', 'SD', 'SS', 'CF', 'MU', 'EH',
+  'SC', 'SD', 'SS', 'CF', 'MU', 'EH', 'CD', 'LY', 'ML', 'RW', 'SO',
   // Oriente Medio y jurisdicciones sancionadas
-  'IL', 'IR', 'IQ', 'SY', 'YE', 'PS', 'KP', 'CU',
+  'IL', 'IR', 'IQ', 'SY', 'YE', 'PS', 'KP',
 ] as const;

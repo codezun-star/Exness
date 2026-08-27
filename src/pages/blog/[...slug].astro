@@ -5,13 +5,15 @@ import CtaBand from '../../components/CtaBand.astro';
 import Banner from '../../components/Banner.astro';
 import CtaStrip from '../../components/CtaStrip.astro';
 import SideRails from '../../components/SideRails.astro';
+import Video from '../../components/Video.astro';
 
 import { goUrl } from '../../config/affiliate';
 import { useT, blogPath } from '../../i18n/ui';
 import { abs, readingTime } from '../../lib/seo';
 import { allPosts, postSlug, relatedTo, formatDate, type Post } from '../../lib/blog';
 import {
-  graph, organization, website, blogPosting, breadcrumbs, faqPage,
+  graph, organization, website, webPage, brokerEntity, blogPosting,
+  breadcrumbs, faqPage,
 } from '../../lib/schema';
 
 export async function getStaticPaths() {
@@ -42,6 +44,15 @@ const toc = (headings ?? []).filter((h) => h.depth === 2);
 const schema = graph(
   organization(),
   website(),
+  brokerEntity(),
+  // El nodo WebPage al que apunta `mainEntityOfPage` del artículo. Sin él la
+  // referencia queda colgando en el grafo.
+  webPage({
+    url: abs(url),
+    title: post.data.title,
+    description: post.data.description,
+    updated: post.data.updatedDate ?? post.data.pubDate,
+  }),
   blogPosting({
     url: abs(url),
     title: post.data.title,
@@ -62,11 +73,15 @@ const schema = graph(
 ---
 
 <Base
- 
   title={post.data.title}
   description={post.data.description}
   path={url}
   theme="paper"
+  ogType="article"
+  published={post.data.pubDate}
+  modified={post.data.updatedDate}
+  author={post.data.author}
+  tags={post.data.tags}
   schema={schema}
   rails={false}
 >
@@ -97,9 +112,10 @@ const schema = graph(
       </header>
 
       {/*
-        Tira bajo la firma. Los dos <Banner> horizontales sólo aparecerán el día
-        que haya creatividades de 728x90 o 320x100 en el panel; hasta entonces
-        no renderizan nada y el hueco lo cubre la tira propia.
+        Tira bajo la firma. La de 728x90 manda en escritorio y la de 320x50 en
+        móvil: cada una se muestra sólo donde cabe entera, porque encoger una
+        creatividad ajena deforma su texto y va contra las condiciones de uso
+        del material de marca. Debajo, la tira propia con el CTA.
       */}
       <div class="wrap-narrow">
         <Banner format="leaderboard" seed={`strip-${slug}`} ruled={false} />
@@ -134,7 +150,7 @@ const schema = graph(
 
       {/* Antes del cuerpo: el hueco con más visibilidad de la página. */}
       <div class="wrap-narrow">
-        <Banner seed={`post-lede-${slug}`} double />
+        <Banner format="square" seed={`post-lede-${slug}`} double />
       </div>
 
       <div class="wrap-narrow prose">
@@ -149,7 +165,20 @@ const schema = graph(
           rel="sponsored nofollow noopener"
           data-cta="blog-inline"
         >{t('cta.button')}</a>
-        <Banner seed={`post-${slug}`} ruled={false} double />
+        <Banner format="billboard" seed={`post-${slug}`} ruled={false} />
+      </div>
+
+      {/*
+        El vídeo va al terminar el cuerpo y antes de las preguntas. Quien llega
+        aquí ha leído el artículo entero: es el visitante con más intención de
+        toda la página y el que más rentabiliza un formato que cuesta cargar.
+      */}
+      <div class="wrap-narrow">
+        <Video
+          seed={`post-video-${slug}`}
+          title={t('video.titleBlog')}
+          source={`video-blog-${slug}`}
+        />
       </div>
 
       {post.data.faq.length > 0 && (
@@ -187,7 +216,7 @@ const schema = graph(
       )}
 
       <div class="wrap-narrow">
-        <Banner seed={`post-end-${slug}`} double />
+        <Banner format="wide" seed={`post-end-${slug}`} />
         <p class="risk-strip">{t('risk.full')}</p>
         <p class="post-back">
           <a href={blogPath()}>{t('blog.back')}</a>

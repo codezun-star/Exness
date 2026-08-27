@@ -1,7 +1,7 @@
-# exness.codezun.com
+# exness.inversax.com
 
 Sitio de afiliación para el bróker **Exness**, en español y dirigido a los
-mercados hispanoamericanos: 17 landings de país con las condiciones que aplican
+mercados hispanoamericanos: 15 landings de país con las condiciones que aplican
 en cada jurisdicción, blog en Markdown y una capa de SEO / AEO / GEO montada
 desde el primer commit.
 
@@ -133,8 +133,24 @@ Resolución de la CNMV sobre publicidad de CFD—, es que Exness no abre cuentas
 residentes españoles. Una landing dirigida a España enviaría tráfico a un
 registro que va a rebotar.
 
-América Latina, en cambio, está cubierta en su totalidad. De ahí que los 17
-mercados del sitio sean todos hispanoamericanos.
+### América Latina tampoco está cubierta al 100 %
+
+Es el cambio de la revisión de agosto de 2026 y conviene no perderlo de vista.
+Exness dejó de aceptar residentes de **Uruguay** y de **Nicaragua**, que además
+de **Cuba** y **Bahamas** completan el hueco latinoamericano.
+
+Las landings `/uy/` y `/ni/` existían y se eliminaron. `_redirects` las manda a
+la portada con un 301: si estaban indexadas, un 404 tiraría la autoridad
+acumulada y dejaría al visitante sin salida.
+
+Para que no vuelva a pasar en silencio, `assertMarketsAllowed()` —al final de
+`src/config/countries.ts`— **rompe el build** si un mercado de `COUNTRIES` está
+en `BLOCKED_COUNTRIES` o apunta a una entidad que no atiende a minoristas. Las
+dos son erratas de una línea que no dan error en tiempo de ejecución y que
+cuestan tráfico pagado.
+
+Quedan quince mercados hispanoamericanos, y todos son hispanoamericanos por lo
+anterior: es la única región que Exness cubre casi entera.
 
 La lista completa de códigos ISO bloqueados se publica también en `/llms.txt`,
 para que los motores generativos no inventen la respuesta.
@@ -246,7 +262,7 @@ Si cambias los SVG, ejecuta `npm run brand` y ajusta en `src/config/site.ts` →
 ```
 /                       Portada (x-default, indexable)
 /mx/                    México — condiciones, pagos locales y entidad
-/co/  /cl/  /pe/ …      Los otros 16 mercados
+/co/  /cl/  /pe/ …      Los otros 14 mercados
 /blog/                  Índice del blog
 /blog/<slug>/           Artículo
 /legal/risk/            Aviso de riesgo (+ affiliate, privacy, terms, cookies)
@@ -261,7 +277,7 @@ segmento de idioma en las URLs: la portada es `/` y cada mercado vive en
 repetida bajo prefijos distintos.
 
 La portada cubre lo que no cambia entre jurisdicciones —tipos de cuenta,
-comparativa, plataformas, proceso de alta—. Las 17 landings cubren lo que sí
+comparativa, plataformas, proceso de alta—. Las 15 landings cubren lo que sí
 cambia: entidad, apalancamiento aplicable, divisa, métodos de depósito locales y
 activos más operados.
 
@@ -311,16 +327,17 @@ Un objeto en `src/config/countries.ts` y ya existe su landing:
 `entity` es la clave de todo: determina apalancamiento, qué licencia se muestra
 y si puede anunciarse el apalancamiento escalado.
 
-**Antes de añadir uno, comprueba que no está en `BLOCKED_COUNTRIES`.** Y añade
-sólo mercados donde vayas a poner contenido propio en `local-copy.ts`: 20
-páginas casi idénticas rinden menos que 6 bien diferenciadas.
+**Antes de añadir uno, comprueba que no está en `BLOCKED_COUNTRIES`** — aunque
+ya no hace falta de memoria: `assertMarketsAllowed()` rompe el build si lo está.
+Y añade sólo mercados donde vayas a poner contenido propio en `local-copy.ts`:
+20 páginas casi idénticas rinden menos que 6 bien diferenciadas.
 
 ### Copy de la interfaz
 
 Todo el texto vive en `src/i18n/locales/es.ts`, con marcadores que se resuelven
-solos: `{min}`, `{minLocal}`, `{leverage}`, `{country}`, `{year}`, `{entity}`,
+solos: `{min}`, `{minWallet}`, `{minPro}`, `{leverage}`, `{country}`, `{year}`, `{entity}`,
 `{clients}`, `{volume}`… `useT(country)` inyecta los valores de ese mercado, así
-que una cadena escrita una vez sale correcta en las 17 landings.
+que una cadena escrita una vez sale correcta en las 15 landings.
 
 ### Un artículo
 
@@ -370,12 +387,12 @@ además no hay traducciones.
 reciprocidad**, verificado sobre el HTML compilado.
 
 Hay un solo grupo y es el que importa en un sitio monolingüe con varios
-mercados: las 17 landings son la misma página en español dirigida a países
+mercados: las 15 landings son la misma página en español dirigida a países
 distintos, anotadas con idioma + región — `es-MX`, `es-CO`, `es-AR`… Es lo que
 hace que Google sirva `/mx/` a México y `/co/` a Colombia en lugar de elegir una
 y tratar el resto como duplicado.
 
-El grupo lo forman las 17 landings más la portada, que actúa de `x-default`.
+El grupo lo forman las 15 landings más la portada, que actúa de `x-default`.
 Blog y legales no llevan hreflang: no tienen alternativas que declarar.
 
 La regla que lo mantiene íntegro: **todos los miembros declaran exactamente la
@@ -408,7 +425,7 @@ se puede abrir cuenta en Exness?», que es de las que más se buscan y de las qu
 peor responde la competencia.
 
 **GEO.** `/llms.txt` publica en texto plano las entidades, licencias,
-apalancamientos, cuentas, los 17 mercados con sus datos, la lista completa de
+apalancamientos, cuentas, los 15 mercados con sus datos, la lista completa de
 códigos ISO bloqueados y —explícitamente— que Exness no ofrece bonos, porque es
 justo el punto donde un modelo generativo tiende a inventar.
 
@@ -456,29 +473,55 @@ Reglas que este sitio ya respeta y que **no conviene romper**:
 
 ---
 
-## Banners
+## Banners y vídeos
 
-`EXNESS_BANNERS` en `src/config/affiliate.ts` está **vacío a propósito**.
+`EXNESS_BANNERS`, en `src/config/affiliate.ts`, lleva las siete creatividades de
+la campaña «Take control» en español, servidas desde el CDN de Exness. No están
+rehospedadas a propósito: las condiciones de uso del material de marca permiten
+enlazarlo, no copiarlo ni redimensionarlo.
 
-Los huecos existen en la portada, en las 17 landings, en el blog y en el 404, y
-funcionan; simplemente no tienen nada que servir, así que no renderizan nada en
-absoluto — ni marco, ni hueco, ni petición de red.
+| Formato | Medida | Dónde vive |
+| --- | --- | --- |
+| `skyscraper` | 120x600 | raíles laterales (`EdgeRails`, `SideRails`) |
+| `leaderboard` | 728x90 | tira horizontal, a partir de 48rem |
+| `mobilebar` | 320x50 | la misma tira, por debajo de 48rem |
+| `billboard` | 970x250 y 980x250 | banda ancha dentro del contenido |
+| `wide` | 1200x628 | cierre de artículo |
+| `square` | 800x800 | unidad cuadrada, la que va en pareja |
+| `rectangle` | 300x250 | **sin pieza todavía**; el hueco no renderiza nada |
 
-Para activarlos: en tu panel de Exness Partners → Marketing tools → Banners,
-elige idioma español y copia de cada creatividad su URL de imagen y su URL de
-destino. Añade un objeto por pieza con el formato que le corresponda por tamaño.
-En cuanto haya piezas, los seis emplazamientos se activan solos.
+El `href` de cada creatividad **no** es el enlace de socio crudo: pasa por el
+redirector `/go/` con la posición marcada (`?s=banner-billboard`, etc.), igual
+que los botones. Así se puede rotar el enlace sin recompilar y cada impresión
+queda atribuida a su formato en analítica.
 
-**No inventes identificadores ni los derives de los que veas en otro sitio:** una
-URL de creatividad que no existe devuelve 404 y deja el hueco en blanco en todas
-las páginas a la vez.
+La rotación tiene dos capas: en build, `bannerRotation()` usa un hash del `seed`
+—la ruta de la página más el nombre del hueco— para decidir por dónde empieza la
+baraja, de modo que dos páginas nunca abren con la misma pieza y el HTML sigue
+siendo reproducible entre builds; en cliente, `Banner.astro` recorre el resto
+cada 9 s, sólo mientras el hueco está a la vista y nunca si el visitante pidió
+movimiento reducido.
 
-La rotación ya está montada y tiene dos capas: en build, `bannerRotation()` usa
-un hash del `seed` —la ruta de la página más el nombre del hueco— para decidir
-por dónde empieza la baraja, de modo que dos páginas nunca abren con la misma
-pieza y el HTML sigue siendo reproducible entre builds; en cliente,
-`Banner.astro` recorre el resto cada 9 s, sólo mientras el hueco está a la vista
-y nunca si el visitante pidió movimiento reducido.
+**Si añades piezas nuevas, copia la URL de imagen literal del panel.** Una URL
+inventada devuelve 404 y deja el hueco en blanco en todas las páginas a la vez,
+sin que nada falle en el build.
+
+### Vídeos
+
+`EXNESS_VIDEOS` lleva los tres vídeos de marca, incrustados desde Brandfolder y
+repartidos por `<Video>` con la misma lógica de semilla que los banners: cada
+página recibe una pieza estable y distinta de la de al lado.
+
+Tres decisiones del componente que no son de estilo:
+
+- El `iframe` va con `loading="lazy"`. Una incrustación de vídeo pesa más que el
+  resto de la página junta y hundiría el LCP de una landing.
+- **Sin `autoplay`.** Un vídeo que arranca solo con sonido es la forma más rápida
+  de que se cierre la pestaña, y en móvil gasta datos no pedidos.
+- Debajo va **siempre** un CTA. Un vídeo sin salida es entretenimiento.
+
+El marco reserva su espacio con `aspect-ratio`, así que el iframe no empuja el
+botón al cargar.
 
 ---
 
@@ -490,7 +533,7 @@ de país vía `/cdn-cgi/trace` ya están listos).
 1. Sube el repositorio a GitHub.
 2. Cloudflare Pages → *Connect to Git*.
 3. Build command `npm run build`, output directory `dist`.
-4. Custom domain → `exness.codezun.com`.
+4. Custom domain → `exness.inversax.com`.
 
 Funciona igual en Netlify o Vercel; lo único que se pierde fuera de Cloudflare es
 la sugerencia geográfica del cliente, que falla en silencio sin romper nada. En
@@ -506,16 +549,29 @@ cloaking.
 
 ## Pendiente antes de publicar
 
-- [ ] **Verificar los dos enlaces de afiliado** con `curl -sI` (bloqueados en el
-      entorno de construcción)
+- [ ] **Verificar los tres enlaces de afiliado desde un navegador real**, en
+      ventana privada. `curl` no sirve: `one.exnessonelink.com` está detrás del
+      anti-bot de Cloudflare y devuelve 403 con `cf-mitigated: challenge` a
+      cualquier petición automatizada, tanto si la ruta es válida como si no.
+      Cada uno debe acabar en un registro de exness.com con tu código en la URL.
 - [ ] **Contrastar contra exness.com todo lo marcado `[SEC]`** en `offers.ts`:
-      spreads de Standard y Cent, comisión de Zero, volumen y clientes
-- [ ] **Confirmar `BLOCKED_COUNTRIES`** en el centro de ayuda de socios de Exness
+      spreads de Standard y Cent, comisión de Zero y de Raw Spread, volumen
+      mensual y número de traders activos
+- [ ] **Confirmar `BLOCKED_COUNTRIES`** en el centro de ayuda de socios de
+      Exness, con atención especial a Uruguay y Nicaragua: las dos landings se
+      retiraron por eso y si la política volviera a cambiar habría que
+      reponerlas
+- [ ] **Decidir la marca.** `SITE.brand` sigue siendo `EXZUN`, heredado del
+      dominio anterior. Si pasa a ser otra, hay que cambiarla en `site.ts`,
+      rehacer los dos SVG de `brand-source/` y ejecutar `npm run brand`: los
+      logos son imágenes y no se actualizan solos al cambiar la cadena
 - [ ] Poner los IDs de GA4 / Meta / TikTok en `src/config/site.ts`
 - [ ] Rellenar `SITE.social` con tus perfiles reales (alimenta `sameAs`)
 - [ ] Revisar `privacy` y `terms` con los datos de tu entidad legal: esas dos
       páginas se generan a partir del diccionario y son un punto de partida, no
       un texto legal definitivo
-- [ ] Cargar las creatividades en `EXNESS_BANNERS`
-- [ ] Escribir los primeros artículos del blog partiendo de `_plantilla.md`
 - [ ] Dar de alta el dominio en Google Search Console y Bing Webmaster
+- [x] ~~Cargar las creatividades en `EXNESS_BANNERS`~~ — hechas las siete de
+      «Take control» y los tres vídeos de marca
+- [x] ~~Escribir los primeros artículos del blog~~ — diez publicados: cinco
+      guías de mercado y cinco temáticas

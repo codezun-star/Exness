@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://exness.codezun.com',
+  site: 'https://exness.inversax.com',
   trailingSlash: 'always',
   build: { format: 'directory' },
   prefetch: { prefetchAll: true, defaultStrategy: 'hover' },

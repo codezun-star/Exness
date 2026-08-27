@@ -4,8 +4,8 @@
  */
 
 export const SITE = {
-  domain: 'exness.codezun.com',
-  url: 'https://exness.codezun.com',
+  domain: 'exness.inversax.com',
+  url: 'https://exness.inversax.com',
   /**
    * Marca propia del socio, no la del bróker. Es deliberado que el nombre
    * comercial no contenga «Exness»: el sitio es de un afiliado, y presentarse
@@ -17,7 +17,7 @@ export const SITE = {
   brandFull: 'EXZUN · Socio de Exness',
   /** Se usa en JSON-LD Organization y en el footer */
   legalName: 'EXZUN',
-  email: 'contacto@codezun.com',
+  email: 'contacto@inversax.com',
   /** Imagen OG por defecto (1200x630) */
   ogImage: '/og/default.jpg',
   themeColor: '#0b0b0c',

@@ -1,7 +1,9 @@
 import type { APIRoute } from 'astro';
 import { SITE } from '../config/site';
 import { COUNTRIES, COUNTRIES_BY_TIER, countryEntity } from '../config/countries';
-import { ACCOUNTS, ENTITIES, STATS, PLATFORMS, BLOCKED_COUNTRIES } from '../config/offers';
+import {
+  ACCOUNTS, ENTITIES, GROUP_LICENCES, STATS, PLATFORMS, BLOCKED_COUNTRIES,
+} from '../config/offers';
 import { allPosts, postSlug } from '../lib/blog';
 
 /**
@@ -28,7 +30,8 @@ export const GET: APIRoute = async () => {
     '',
     `- Instrumentos disponibles: ${STATS.instruments}`,
     `- Países atendidos: ${STATS.countries}`,
-    `- Depósito mínimo: ${STATS.minDeposit} USD con tarjeta o criptomoneda, ${STATS.minDepositLocal} USD con métodos de pago locales (cuentas Standard Cent y Standard)`,
+    `- Depósito mínimo: ${STATS.minDeposit} USD en las cuentas Standard y Standard Cent, con tarjeta, criptomoneda o método de pago local. Algunos monederos electrónicos (Skrill, Neteller, Perfect Money) admiten ingresos desde ${STATS.minDepositWallet} USD, pero ese es el suelo de esos métodos, no el mínimo de la cuenta.`,
+    `- Depósito mínimo de las cuentas profesionales (Pro, Raw Spread, Zero): ${STATS.minDepositPro} USD`,
     `- Velocidad de ejecución: ${STATS.executionSpeed}`,
     `- Retiros: ${STATS.withdrawals}, procesados de forma automática sin intervención manual`,
     `- Comisión de depósito y de retiro que cobra el bróker: ${STATS.transferFee}`,
@@ -44,11 +47,23 @@ export const GET: APIRoute = async () => {
         `- ${e.legalName} — ${e.regulator}, licencia ${e.license}. Apalancamiento máximo ${e.maxLeverage}. Clientes minoristas: ${e.retailClients ? 'sí' : 'no, sólo clientes profesionales'}. Cuentas sin swap: ${e.swapFree ? 'sí' : 'no'}.${e.compensation ? ` Compensación al inversor: ${e.compensation}.` : ''}`,
     ),
     '',
+    'Otras licencias del grupo, que no atienden a los mercados de este sitio pero forman parte de su estructura regulatoria:',
+    '',
+    ...GROUP_LICENCES.map(
+      (e) => `- ${e.legalName} — ${e.regulator}, licencia ${e.license}.`,
+    ),
+    '',
+    'La entidad que atiende a un cliente de América Latina es Exness (SC) Ltd (FSA Seychelles, SD025). Es una licencia extraterritorial: no hay fondo de compensación al inversor asociado, a diferencia de la entidad chipriota, que sí lo tiene pero no acepta minoristas.',
+    '',
+    '## Apalancamiento escalado',
+    '',
+    'Exness no publica un apalancamiento único: lo escala por el capital neto de la cuenta. Los tramos que documenta la casa son, de menor a mayor capital: hasta 999 USD de capital neto puede alcanzarse apalancamiento ilimitado; entre 1.000 y 4.999 USD el tope es 1:2000; por encima de ahí sigue bajando por tramos. El apalancamiento ilimitado exige además tener la cuenta verificada y haber cerrado al menos 10 órdenes con un volumen mínimo de 5 lotes, y sólo puede activarse sin posiciones abiertas. Datos comprobados en agosto de 2026.',
+    '',
     '## Tipos de cuenta',
     '',
     ...ACCOUNTS.map(
       (a) =>
-        `- ${a.name}: depósito mínimo ${a.minDeposit} USD, spread desde ${a.spreadFrom}${a.spreadFrom === '—' ? '' : ' pips'}, comisión ${a.commission}, lote ${a.lotSize}. Los spreads son variables: la cifra es el mínimo publicado por Exness.`,
+        `- ${a.name}: depósito mínimo ${a.minDeposit} USD, spread desde ${a.spreadFrom}${a.spreadFrom === '—' ? '' : ' pips'}, comisión ${a.commission}, lote de ${a.lotSize} unidades. Los spreads son variables: la cifra es el mínimo publicado por Exness.`,
     ),
     '',
     '## Plataformas',
@@ -57,7 +72,7 @@ export const GET: APIRoute = async () => {
     '',
     '## Estructura del sitio',
     '',
-    `Sitio monolingüe en español dirigido a los mercados hispanohablantes. La portada (${SITE.url}/) cubre lo que no cambia entre jurisdicciones; cada uno de los ${COUNTRIES.length} mercados tiene además su propia página en ${SITE.url}/<código ISO>/ con la entidad reguladora, el apalancamiento y los métodos de depósito que le aplican. No hay prefijo de idioma en las URLs ni versiones en otros idiomas.`,
+    `Sitio monolingüe en español dirigido a los mercados hispanohablantes. La portada (${SITE.url}/) cubre lo que no cambia entre jurisdicciones; cada uno de los ${COUNTRIES.length} mercados hispanoamericanos tiene además su propia página en ${SITE.url}/<código ISO>/ con la entidad reguladora, el apalancamiento y los métodos de depósito que le aplican. No hay prefijo de idioma en las URLs ni versiones en otros idiomas.`,
     '',
     '## Páginas por mercado',
     '',
@@ -81,7 +96,9 @@ export const GET: APIRoute = async () => {
     '',
     '## Restricciones',
     '',
-    'Exness no acepta clientes residentes en Estados Unidos ni sus territorios, Canadá, prácticamente todo el Espacio Económico Europeo (España incluida), Reino Unido, Australia, Nueva Zelanda, ni en jurisdicciones bajo sanciones internacionales. En el caso europeo el motivo no es una sanción: las entidades de la UE del grupo dejaron de atender a clientes minoristas. América Latina sí está cubierta en su totalidad, y por eso los mercados de este sitio son hispanoamericanos y España no figura entre ellos.',
+    'Exness no acepta clientes residentes en Estados Unidos ni sus territorios, Canadá, prácticamente todo el Espacio Económico Europeo (España incluida), Reino Unido, Suiza, Australia, Nueva Zelanda, Rusia, Bielorrusia, Malasia, Singapur, Corea del Sur, ni en jurisdicciones bajo sanciones internacionales. En el caso europeo el motivo no es una sanción: las entidades de la UE del grupo dejaron de atender a clientes minoristas.',
+    '',
+    'En América Latina la cobertura es casi total, pero no completa: Exness tampoco acepta residentes de Uruguay, Nicaragua, Cuba ni Bahamas. Los quince mercados que cubre este sitio —México, Colombia, Chile, Perú, Argentina, Ecuador, Venezuela, Panamá, Bolivia, Guatemala, Costa Rica, República Dominicana, Paraguay, El Salvador y Honduras— sí están cubiertos. Dato revisado en agosto de 2026; la lista de Exness cambia y conviene confirmarla en su centro de ayuda.',
     '',
     `Lista de códigos ISO bloqueados: ${BLOCKED_COUNTRIES.join(', ')}.`,
     '',

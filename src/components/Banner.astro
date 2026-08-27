@@ -5,7 +5,12 @@ import {
 } from '../config/affiliate';
 
 interface Props {
-  /** 300x250 para huecos dentro del contenido, 120x600 para el raíl lateral */
+  /**
+   * Qué pieza se sirve. `square` (800x800) es el valor por defecto porque es
+   * el formato que encaja en los huecos de dentro del contenido, que son los
+   * que van en pareja. Para una banda ancha a lo largo de la columna usa
+   * `billboard`; para el raíl lateral, `skyscraper`.
+   */
   format?: BannerFormat;
   /**
    * Identifica el hueco: ruta de la página + posición. Decide qué creatividad
@@ -25,7 +30,7 @@ interface Props {
 }
 
 const {
-  format = 'rectangle',
+  format = 'square',
   seed = 'default',
   count = 4,
   ruled = true,
@@ -77,7 +82,7 @@ const slots = decks
           src={slot.first.img}
           width={slot.first.width}
           height={slot.first.height}
-          alt="Exness · bróker de forex y CFD"
+          alt="Exness · abre tu cuenta y opera con retiros instantáneos"
           loading="lazy"
           decoding="async"
           referrerpolicy="no-referrer-when-downgrade"
@@ -179,6 +184,15 @@ const slots = decks
     .banner-slot-extra { display: flex; }
   }
 
+  /*
+    Un billboard mide 980px él solo: en pareja no caben ni en una pantalla de
+    escritorio, y el navegador los encogería hasta dejar el texto del anuncio
+    ilegible. Si a un hueco de billboard le llega `double`, la segunda pieza
+    simplemente no se muestra.
+  */
+  .banner-rack-double:has(.banner-billboard) { flex-direction: column; }
+  .banner-rack-double:has(.banner-billboard) .banner-slot-extra { display: none; }
+
   .banner-slot {
     display: flex;
     flex-direction: column;
@@ -216,7 +230,15 @@ const slots = decks
     line-height: 0;
   }
 
-  /* Reserva del hueco: sin esto, cada banner empuja el texto al cargar. */
+  /*
+    Reserva del hueco: sin esto, cada banner empuja el texto al cargar y la
+    página se lleva un CLS que Google sí mide.
+
+    Las piezas anchas se declaran con `aspect-ratio` y `max-width` en vez de
+    con un alto fijo: un billboard de 980px no cabe en un móvil, y la única
+    forma de que encoja sin descuadrar la reserva es que el alto lo derive el
+    navegador de la proporción.
+  */
   .banner-rectangle .banner-link {
     width: 300px;
     height: 250px;
@@ -226,6 +248,29 @@ const slots = decks
     width: 120px;
     height: 600px;
   }
+
+  /*
+    En los tres formatos flexibles el ancho lo lleva el HUECO, no el enlace.
+    Es la única forma de que funcione dentro de un rack en fila: un
+    `width: 100%` en el enlace se resolvería contra un padre de ancho
+    automático y colapsaría. Con `width` en píxeles más `max-width: 100%` el
+    hueco tiene base definida para el flex y encoge solo en pantallas
+    estrechas; el enlace se limita a rellenarlo con la proporción correcta.
+  */
+  .banner-billboard { width: 980px; max-width: 100%; }
+  .banner-wide { width: 640px; max-width: 100%; }
+  .banner-square { width: 300px; max-width: 100%; }
+
+  .banner-billboard .banner-link,
+  .banner-wide .banner-link,
+  .banner-square .banner-link {
+    width: 100%;
+    height: auto;
+  }
+
+  .banner-billboard .banner-link { aspect-ratio: 980 / 250; }
+  .banner-wide .banner-link { aspect-ratio: 1200 / 628; }
+  .banner-square .banner-link { aspect-ratio: 1 / 1; }
 
   /*
     Tiras horizontales. Cada una sólo aparece donde cabe entera: la de 728px
@@ -240,7 +285,7 @@ const slots = decks
 
   .banner-mobilebar .banner-link {
     width: 320px;
-    height: 100px;
+    height: 50px;
   }
 
   .banner-leaderboard { display: none; }
@@ -262,6 +307,13 @@ const slots = decks
       width: 100%;
       height: auto;
       aspect-ratio: 300 / 250;
+    }
+
+    /* Por debajo de 328px la tira de 320px tampoco cabe con el margen. */
+    .banner-mobilebar .banner-link {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 320 / 50;
     }
   }
 </style>
