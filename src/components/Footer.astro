@@ -131,6 +131,15 @@ const regulators = Object.values(ENTITIES).map(
         <p class="footer-affiliate">
           <a href={legalPath('affiliate')}>{t('footer.disclosureShort')}</a>
         </p>
+        {/*
+          Enlace a la matriz de la red. Seguido a propósito: es un sitio propio
+          y el enlace existe para transmitir señal, al revés que los enlaces al
+          bróker, que llevan `sponsored nofollow`. El reparto de intención entre
+          los dos sitios está explicado en components/Network.astro.
+        */}
+        <p class="footer-network">
+          <a href="https://inversax.com/brokers">{t('network.footer')}</a>
+        </p>
         <div class="footer-base-row">
           <p>© {year} {SITE.brand}. {t('footer.rights')}</p>
           <p class="mono">{SITE.domain}</p>
@@ -255,4 +264,21 @@ const regulators = Object.values(ENTITIES).map(
   }
 
   .footer-affiliate a:hover { color: var(--color-accent-2); }
+
+  /* Hereda la forma de la divulgación: misma letra pequeña, mismo gris. Es un
+     enlace de navegación entre sitios propios, no una llamada a la acción. */
+  .footer-network {
+    margin-bottom: 0.875rem !important;
+    font-size: 0.6875rem;
+    line-height: 1.5;
+  }
+
+  .footer-network a {
+    color: var(--color-muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s ease;
+  }
+
+  .footer-network a:hover { color: var(--color-accent-2); }
 </style>

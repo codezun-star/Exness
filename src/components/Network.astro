@@ -1,0 +1,109 @@
+---
+import type { Country } from '../config/countries';
+import { useT } from '../i18n/ui';
+
+interface Props {
+  country: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/**
+ * Puente hacia el comparador de la red, inversax.com.
+ *
+ * Los tres sitios de la red se reparten la intención de búsqueda por país, y
+ * este bloque es la mitad visible de ese reparto:
+ *
+ * - "exness en honduras", "exness es confiable" → este sitio. Un bróker, a fondo.
+ * - "mejores brokers en honduras"               → inversax.com/brokers/hn. Siete
+ *                                                 brókeres comparados, con los
+ *                                                 métodos de pago locales.
+ *
+ * Sin este enlace las dos páginas competían por consultas vecinas sin que
+ * ninguna dijera cuál responde a qué, que es la definición de canibalización.
+ * Con él, cada una declara su alcance y manda a la otra el tráfico que no le
+ * corresponde.
+ *
+ * El enlace es **seguido**: apunta a un sitio de la propia red y su función es
+ * justamente transmitir señal. No lleva `sponsored` ni `nofollow` — eso es
+ * para los enlaces al bróker, que son otra cosa y están en otros componentes.
+ */
+const comparadorUrl = 'https://inversax.com/brokers/' + country.code;
+---
+
+<section class="band band-tight band-paper" id="comparar">
+  <div class="wrap">
+    <p class="eyebrow">{t('network.eyebrow')}</p>
+    <div class="net-body">
+      <div class="net-text">
+        <h2 class="display display-s net-title">
+          {t('network.title', { country: country.name })}
+        </h2>
+        <p class="net-desc">{t('network.desc', { country: country.name })}</p>
+      </div>
+      <a class="net-link" href={comparadorUrl}>
+        <span class="net-link-label">{t('network.cta', { country: country.name })}</span>
+        <span class="net-link-host mono">inversax.com</span>
+        <svg class="net-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .net-body {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    align-items: center;
+    border-top: 2px solid var(--color-accent);
+    padding-top: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  @media (min-width: 56rem) {
+    .net-body { grid-template-columns: 1fr auto; }
+  }
+
+  .net-title { margin: 0 0 0.75rem; max-width: 24ch; }
+
+  .net-desc {
+    margin: 0;
+    max-width: 62ch;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--color-ink);
+  }
+
+  .net-link {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.35rem 1rem;
+    padding: 1.15rem 1.4rem;
+    border: 2px solid var(--color-line);
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: var(--color-ink);
+    background: #fff;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+
+  .net-link:hover,
+  .net-link:focus-visible {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+
+  .net-link-label { font-weight: 700; font-size: 1rem; line-height: 1.35; }
+
+  .net-link-host {
+    grid-column: 1;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  .net-arrow { grid-column: 2; grid-row: 1 / span 2; transition: transform 0.18s ease; }
+  .net-link:hover .net-arrow { transform: translateX(3px); }
+</style>

@@ -5,7 +5,7 @@ mercados hispanoamericanos: 15 landings de país con las condiciones que aplican
 en cada jurisdicción, blog en Markdown y una capa de SEO / AEO / GEO montada
 desde el primer commit.
 
-**28 páginas estáticas** (24 indexables). Sin base de datos, sin servidor, sin
+**41 páginas estáticas** (37 indexables). Sin base de datos, sin servidor, sin
 JavaScript de framework en el cliente.
 
 Réplica estructural del sitio de XM del mismo autor, con la misma arquitectura y
@@ -222,6 +222,31 @@ secundario, por debajo del 4,5:1 que pide la norma), y dentro de un ámbito
 oscuro esa misma variable se redefine al gris claro.
 
 ---
+
+
+## Red Inversax
+
+Este sitio no está solo. Forma red con `inversax.com` —el comparador de siete
+brókeres en 22 países— y con `xm.inversax.com`. El reparto de intención es por
+país y evita que las tres propiedades compitan por la misma consulta:
+
+| Consulta | Responde |
+| --- | --- |
+| "exness en honduras", "exness es confiable" | este sitio |
+| "mejores brokers en honduras" | `inversax.com/brokers/hn` |
+
+El puente está en `src/components/Network.astro`, que se renderiza tras la FAQ
+de cada landing de país, y en el enlace de pie de `Footer.astro` (clave i18n
+`network.footer`). **Los dos son enlaces seguidos**: apuntan a una propiedad
+propia y existen para transmitir señal, al contrario que los enlaces al bróker,
+que llevan `sponsored nofollow`. No les añadas `rel` restrictivo.
+
+Del otro lado, `inversax.com` enlaza aquí desde la ficha de Exness de cada
+página de país mediante `src/lib/sitiosBroker.ts`, que mantiene a mano la lista
+de países con landing. **Al añadir un mercado a `src/config/countries.ts` hay
+que añadirlo también allí**, o el enlace no se genera; y al revés, un país
+listado allí que no exista aquí produce un 404.
+
 
 ## Marca
 

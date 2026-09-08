@@ -13,6 +13,7 @@ import Banner from '../../components/Banner.astro';
 import Platforms from '../../components/Platforms.astro';
 import Faq from '../../components/Faq.astro';
 import CountryGrid from '../../components/CountryGrid.astro';
+import Network from '../../components/Network.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import Video from '../../components/Video.astro';
 
@@ -174,6 +175,7 @@ const schema = graph(
 
   <Platforms country={country} />
   <Faq country={country} items={qas} />
+  <Network country={country} />
   <CountryGrid country={country} />
   <CtaBand country={country} source={`country-${country.code}`} />
 </Base>

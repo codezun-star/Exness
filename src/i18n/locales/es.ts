@@ -187,6 +187,18 @@ const es = {
   'blog.empty': 'Todavía no hay artículos publicados. Estamos preparando las primeras guías.',
   'blog.toc': 'En este artículo',
 
+  // ── Red Inversax ──────────────────────────────────────────────
+  //
+  // El reparto de intención entre los sitios de la red. Este sitio responde
+  // "Exness en {país}"; el comparador responde "mejores brokers en {país}".
+  // El bloque lo dice en voz alta para que ninguna de las dos páginas persiga
+  // la consulta de la otra.
+  'network.eyebrow': 'Red Inversax',
+  'network.title': '¿Exness es el bróker que te conviene en {country}?',
+  'network.desc': 'Este sitio cubre Exness a fondo: la entidad que te atiende, las cuentas Cent y Standard y los plazos reales de retiro. Si todavía estás decidiendo el bróker, la comparativa de Inversax pone a Exness frente a los otros que aceptan clientes en {country}, con depósito mínimo, spreads y métodos de pago locales.',
+  'network.cta': 'Comparar brókeres disponibles en {country}',
+  'network.footer': 'Parte de Inversax, comparador independiente de brókeres',
+
   // ── Footer y legal ────────────────────────────────────────────
   /*
     Titular propio del pie. NO reutiliza 'cta.title': el pie va justo debajo
@@ -254,9 +266,16 @@ const es = {
   'aeo.takeaways': 'Puntos clave',
 
   // ── SEO ───────────────────────────────────────────────────────
-  'seo.home.title': 'Exness: abrir cuenta, spreads y condiciones {year}',
+  //
+  // Los títulos no llevan año. Dos razones: envejecen —hasta que se regenera el
+  // build, en enero el título anuncia el año pasado— y no aportan nada a una
+  // consulta de marca. El de portada sí dice "broker de forex y CFD" a
+  // propósito: Search Console registraba "xm broker" en posición 32, "xm forex"
+  // en 27 y "xm cfd" en 24, todas sin un solo clic, contra un título que no
+  // contenía ninguna de esas tres palabras.
+  'seo.home.title': 'Exness broker de forex y CFD: condiciones, spreads y abrir cuenta',
   'seo.home.desc': 'Cómo abrir una cuenta en Exness desde {min} USD: tipos de cuenta, spreads desde {spread} pips, apalancamiento escalado, retiros instantáneos y condiciones por país.',
-  'seo.country.title': 'Exness en {country}: cómo abrir cuenta y depositar en {year}',
+  'seo.country.title': 'Exness en {country}: cómo abrir cuenta y depositar',
   'seo.country.desc': 'Guía de Exness para {country}: entidad reguladora, apalancamiento hasta {leverage}, depósito desde {min} USD y métodos de pago locales.',
   'seo.legal.risk': 'Advertencia de riesgo: qué implica operar con CFD apalancados, por qué la mayoría de minoristas pierde dinero y qué entidad de Exness te atiende según tu país.',
   'seo.legal.affiliate': 'Divulgación de afiliación: cómo se financia {brand}, qué comisión recibe de Exness y por qué eso no altera las condiciones que obtienes ni la información publicada.',
