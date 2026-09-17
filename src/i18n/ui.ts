@@ -19,7 +19,7 @@ export type Vars = Record<string, string | number>;
 /**
  * Entidad por defecto cuando la página no es de un país concreto.
  *
- * Exness (SC) Ltd atiende a los 17 mercados hispanoamericanos del sitio. La
+ * Exness (SC) Ltd atiende a los 15 mercados hispanoamericanos del sitio. La
  * portada se dirige al público general hispanohablante, así que declara esta
  * entidad de forma explícita en vez de heredarla por accidente.
  */

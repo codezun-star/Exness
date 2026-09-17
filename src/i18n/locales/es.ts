@@ -22,6 +22,7 @@ const es = {
   'nav.faq': 'Preguntas',
   'nav.cta': 'Abrir cuenta',
   'nav.menu': 'Menú',
+  'nav.skip': 'Saltar al contenido',
 
   // ── Barra superior de urgencia ────────────────────────────────
   'bar.text': 'Registro abierto · Depósito desde {min} USD · Retiros instantáneos 24/7',
@@ -140,7 +141,7 @@ const es = {
   'faq.q1': '¿Exness es un bróker seguro y regulado?',
   'faq.a1': 'Exness opera mediante varias entidades reguladas. A los clientes de América Latina los atiende Exness (SC) Ltd, autorizada por la FSA de Seychelles con la licencia SD025. El grupo tiene además Exness B.V. en Curazao (CBCS, 0003LSI), Vlerizo (Pty) Ltd en Sudáfrica bajo el nombre Exness ZA (FSCA, FSP 51024) y Exness (Cy) Ltd en Chipre (CySEC, 178/12), esta última sólo para clientes profesionales. La entidad que te atiende depende de tu país de residencia y determina tu apalancamiento máximo y tus protecciones.',
   'faq.q2': '¿Desde qué países no se puede abrir cuenta en Exness?',
-  'faq.a2': 'La lista de Exness es más larga que la de la mayoría de brókeres. No acepta residentes de Estados Unidos ni de sus territorios, de Canadá, de prácticamente todo el Espacio Económico Europeo —España incluida—, del Reino Unido, de Australia ni de Nueva Zelanda, además de las jurisdicciones sancionadas internacionalmente. El motivo en el caso europeo no es una sanción: sus entidades de la UE dejaron de atender a clientes minoristas. América Latina sí está cubierta en su totalidad, y por eso los 17 mercados de este sitio son hispanoamericanos y no está España.',
+  'faq.a2': 'La lista de Exness es más larga que la de la mayoría de brókeres. No acepta residentes de Estados Unidos ni de sus territorios, de Canadá, de prácticamente todo el Espacio Económico Europeo —España incluida—, del Reino Unido, de Australia ni de Nueva Zelanda, además de las jurisdicciones sancionadas internacionalmente. El motivo en el caso europeo no es una sanción: sus entidades de la UE dejaron de atender a clientes minoristas. América Latina sí está cubierta en su totalidad, y por eso los 15 mercados de este sitio son hispanoamericanos y no está España.',
   'faq.q3': '¿Cuál es el depósito mínimo en Exness?',
   'faq.a3': 'El mínimo publicado por Exness es {min} USD para las cuentas Standard y Standard Cent, y vale igual con tarjeta, criptomoneda o método de pago local. Algunos monederos electrónicos —Skrill, Neteller, Perfect Money— admiten ingresos desde {minWallet} USD, pero eso es el suelo de esos métodos concretos, no el mínimo general de la cuenta. Las cuentas profesionales —Pro, Raw Spread y Zero— exigen {minPro} USD. Exness no cobra comisión por el depósito en ningún caso.',
   'faq.a4': 'Exness procesa los retiros de forma instantánea y automática, las 24 horas y todos los días del año, sin intervención manual. Lo que puede tardar es la acreditación en destino, y eso ya depende de tu banco o de tu monedero, no del bróker. Exness no cobra comisión por el retiro.',

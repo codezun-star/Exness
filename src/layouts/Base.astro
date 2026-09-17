@@ -191,7 +191,12 @@ const robots = noindex
   </head>
 
   <body data-theme={theme}>
-    <a href="#main" class="sr-only">{t('nav.menu')}</a>
+    {/*
+      Enlace de salto. Decía «Menú», que es la etiqueta del nav: quien navega
+      con teclado o lector de pantalla lo oía anunciado como un menú y se
+      saltaba lo único que le ahorra tabular por la cabecera entera.
+    */}
+    <a href="#main" class="sr-only">{t('nav.skip')}</a>
 
     <Header country={country} />
 

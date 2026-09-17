@@ -7,11 +7,25 @@
 # considerarlo cloaking.
 
 # Atajos sin barra final para campañas y material impreso.
+#
+# Están los quince mercados, no sólo los prioritarios. Un código impreso o
+# dictado se teclea sin barra final, se llame /mx o /hn, y el mercado que se
+# quedaba fuera de esta lista respondía 404 en vez de a su landing.
 /mx      /mx/    301
 /co      /co/    301
 /cl      /cl/    301
 /pe      /pe/    301
 /ar      /ar/    301
+/ec      /ec/    301
+/ve      /ve/    301
+/pa      /pa/    301
+/bo      /bo/    301
+/gt      /gt/    301
+/cr      /cr/    301
+/do      /do/    301
+/py      /py/    301
+/sv      /sv/    301
+/hn      /hn/    301
 /blog    /blog/  301
 
 # Mercados retirados en la revisión de 2026-08.
