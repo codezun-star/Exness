@@ -1,0 +1,214 @@
+---
+import Icon from './Icon.astro';
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT, countryPath, blogPath } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/**
+ * Barra de pestañas inferior: la navegación de la app en móvil.
+ *
+ * Sustituye a dos piezas a la vez. Al menú hamburguesa de la cabecera, que
+ * obligaba a subir el pulgar hasta la esquina contraria de la pantalla, y al
+ * dock de conversión, que era una segunda barra fija compitiendo por el mismo
+ * borde. Aquí la navegación queda al alcance del pulgar y el CTA principal va
+ * en el centro, que es el sitio que en cualquier app ocupa la acción primaria.
+ *
+ * Mismo criterio de mercado que la cabecera: fuera de una landing de país los
+ * enlaces nacen apuntando a la portada y CountryMemory les antepone el mercado
+ * recordado.
+ */
+const home = country ? countryPath(country.code) : '/';
+const market = country ? undefined : true;
+
+const here = Astro.url.pathname;
+const inBlog = here.startsWith(blogPath());
+const atHome = here === home || here === '/';
+---
+
+<nav class="tabbar on-ink" aria-label={t('nav.main')} data-tabbar>
+  <a
+    class="tab"
+    href={home}
+    data-market-link={market}
+    data-tab="home"
+    aria-current={atHome ? 'page' : undefined}
+  >
+    <Icon name="home" />
+    <span class="tab-label">{t('nav.home')}</span>
+  </a>
+
+  <a class="tab" href={`${home}#cuentas`} data-market-link={market} data-tab="accounts">
+    <Icon name="accounts" />
+    <span class="tab-label">{t('nav.accounts')}</span>
+  </a>
+
+  <a
+    class="tab tab-cta"
+    href={goUrl('real', 'tabbar', country?.code)}
+    rel="sponsored nofollow noopener"
+    data-cta="tabbar"
+  >
+    <span class="tab-cta-mark"><Icon name="open" /></span>
+    <span class="tab-label">{t('nav.cta')}</span>
+  </a>
+
+  <a
+    class="tab"
+    href={blogPath()}
+    data-tab="blog"
+    aria-current={inBlog ? 'page' : undefined}
+  >
+    <Icon name="blog" />
+    <span class="tab-label">{t('nav.blog')}</span>
+  </a>
+
+  <button
+    class="tab"
+    type="button"
+    data-sheet-open="app-menu"
+    aria-haspopup="dialog"
+    aria-controls="app-menu"
+  >
+    <Icon name="menu" />
+    <span class="tab-label">{t('nav.more')}</span>
+  </button>
+</nav>
+
+<style>
+  .tabbar {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 60;
+    display: grid;
+    /* La central es algo más ancha: «Abrir cuenta» tiene que caber entero
+       también a 320 px, donde cinco columnas iguales lo cortaban. */
+    grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 1.4fr) repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    block-size: calc(var(--tab-bar-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+    background: var(--color-ink);
+    border-top: 1px solid var(--color-line-ink);
+    color: var(--color-muted-2);
+    view-transition-name: tab-bar;
+  }
+
+  @media (min-width: 64rem) {
+    .tabbar { display: none; }
+  }
+
+  .tab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-inline-size: 0;
+    padding: 0.375rem 0.125rem 0.25rem;
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+
+  .tab :global(.icon) {
+    inline-size: 1.375rem;
+    block-size: 1.375rem;
+    transition: transform 0.15s ease;
+  }
+
+  .tab:active :global(.icon) { transform: scale(0.88); }
+
+  .tab-label {
+    max-inline-size: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+  }
+
+  /* Pestaña activa: amarillo sobre tinta (13,7:1) y el filete de 2 px arriba,
+     el mismo que marca el borde superior de los avisos del sitio. */
+  .tab[aria-current] { color: var(--color-accent); }
+
+  .tab[aria-current]::before {
+    content: '';
+    position: absolute;
+    inset-block-start: -1px;
+    inset-inline: 22%;
+    block-size: 2px;
+    background: var(--color-accent);
+  }
+
+  /*
+    La acción primaria: un bloque amarillo que sobresale del borde de la barra.
+    Encima va tinta, nunca blanco — blanco sobre este amarillo da 1,5:1.
+  */
+  .tab-cta { color: var(--color-paper); }
+
+  .tab-cta-mark {
+    display: grid;
+    place-items: center;
+    inline-size: 2.75rem;
+    block-size: 2.25rem;
+    margin-block-start: -1.125rem;
+    background: var(--color-accent);
+    color: var(--color-ink);
+    border: 2px solid var(--color-ink);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .tab-cta :global(.icon) { inline-size: 1.25rem; block-size: 1.25rem; }
+  .tab-cta:active .tab-cta-mark { background: var(--color-accent-3); transform: translateY(1px); }
+  .tab-cta:active :global(.icon) { transform: none; }
+
+  @media (hover: hover) {
+    .tab:hover { color: var(--color-paper); }
+    .tab[aria-current]:hover { color: var(--color-accent-2); }
+  }
+</style>
+
+<script>
+  /**
+   * «Cuentas» es un ancla, no una página: se marca activa mientras la tabla de
+   * cuentas ocupa el centro de la pantalla, y «Inicio» recupera la marca al
+   * salir de ella. Sólo en la página que la contiene.
+   */
+  const bar = document.querySelector<HTMLElement>('[data-tabbar]');
+  const section = document.getElementById('cuentas');
+  const homeTab = bar?.querySelector<HTMLElement>('[data-tab="home"]');
+  const accountsTab = bar?.querySelector<HTMLElement>('[data-tab="accounts"]');
+
+  if (bar && section && homeTab && accountsTab && homeTab.hasAttribute('aria-current')) {
+    // `location` y no `page`: es una zona de la página, no otra página.
+    const mark = (tab: HTMLElement, value: 'page' | 'location' | null) =>
+      value ? tab.setAttribute('aria-current', value) : tab.removeAttribute('aria-current');
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const inAccounts = entry.isIntersecting;
+        mark(accountsTab, inAccounts ? 'location' : null);
+        mark(homeTab, inAccounts ? null : 'page');
+      },
+      // Una franja fina a media altura: la sección cuenta como «actual» sólo
+      // cuando la cruza, no en cuanto asoma por abajo.
+      { rootMargin: '-45% 0px -50% 0px' },
+    );
+    observer.observe(section);
+  }
+</script>

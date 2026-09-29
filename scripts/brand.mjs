@@ -125,8 +125,8 @@ await stacked(640, 'brand/logo-640.png');
 console.log(`apilado   ${st320.width}x${st320.height}  → mostrar a 200x${Math.round((200 / st320.width) * st320.height)}`);
 
 /* ── Favicon: el símbolo sobre el negro del sitio, con aire alrededor ─ */
-async function icon(size, file) {
-  const pad = Math.round(size * 0.16);
+async function icon(size, file, padRatio = 0.16) {
+  const pad = Math.round(size * padRatio);
   const inner = await sharp(mark.data)
     .resize({ width: size - pad * 2, height: size - pad * 2, fit: 'contain', background: { ...INK, alpha: 0 } })
     .toBuffer();
@@ -142,7 +142,16 @@ async function icon(size, file) {
 await icon(32, 'favicon-32.png');
 await icon(96, 'favicon.png');
 await icon(180, 'apple-touch-icon.png');
+await icon(192, 'brand/icon-192.png');
 await icon(512, 'brand/icon-512.png');
+
+/*
+  Icono «maskable» para la app instalada. Android lo recorta con la forma que
+  elija el lanzador —círculo, gota, cuadrado redondeado— y sólo garantiza el
+  círculo central del 80 %. Con el aire normal del 16 % las esquinas del
+  filete caían fuera; con un 26 % el símbolo entero queda dentro.
+*/
+await icon(512, 'brand/icon-maskable-512.png', 0.26);
 
 /* ── Imagen Open Graph 1200x630 ──────────────────────────────────── */
 const W = 1200;

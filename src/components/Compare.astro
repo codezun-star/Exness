@@ -73,4 +73,21 @@ const rows = [
 
   .compare-table thead .col-broker { color: var(--color-accent-ink); }
   .compare-table .col-other { color: var(--color-muted); }
+
+  /* Tres columnas caben en un móvil si se deja partir la línea: sin el ancho
+     mínimo de las tablas de datos, la comparativa se lee sin desplazar de lado. */
+  @media (max-width: 47.99rem) {
+    .compare-table { min-width: 0; font-size: 0.875rem; }
+
+    .compare-table th,
+    .compare-table td { padding: 0.875rem 0.625rem; }
+
+    .compare-table th:first-child { padding-inline-start: 0; }
+
+    .compare-table th[scope='row'] { font-size: 0.875rem; }
+
+    .compare-table td.num { white-space: normal; }
+
+    .compare-table thead th { letter-spacing: 0.1em; }
+  }
 </style>

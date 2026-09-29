@@ -92,6 +92,7 @@ const blocks: Record<LegalPage, Block[]> = {
         'exness-consent — localStorage — 12 meses',
         'exness-exit-shown — localStorage — 12 meses',
         'exness-geo-dismissed — sessionStorage — sesión',
+        'exness-app-* — Cache Storage — copia de las páginas visitadas para abrirlas sin conexión; se borra con los datos del sitio',
       ],
     },
     { paragraphs: [t('footer.disclosureText')] },
@@ -118,6 +119,7 @@ const schema = graph(
   theme="paper"
   schema={schema}
   bare
+  back={{ href: '/', label: t('nav.home') }}
 >
   <section class="band band-paper legal">
     <div class="wrap-narrow">

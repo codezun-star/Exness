@@ -2,7 +2,8 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Dock from '../components/Dock.astro';
+import TabBar from '../components/TabBar.astro';
+import AppMenu from '../components/AppMenu.astro';
 import ExitIntent from '../components/ExitIntent.astro';
 import Consent from '../components/Consent.astro';
 import GeoNotice from '../components/GeoNotice.astro';
@@ -44,8 +45,14 @@ interface Props {
   theme?: 'ink' | 'paper';
   country?: Country;
   noindex?: boolean;
-  /** Oculta la barra fija inferior (páginas legales, redirector) */
+  /**
+   * Página sin elementos de conversión flotantes: ni modal de salida, ni aviso
+   * geográfico, ni raíles. La barra de pestañas se queda, porque es la
+   * navegación de la app y no un anuncio.
+   */
   bare?: boolean;
+  /** Página interior: en móvil la cabecera muestra la flecha de volver. */
+  back?: { href: string; label: string };
   /**
    * Raíles de rascacielos anclados al margen del viewport. Se apagan en las
    * páginas que ya montan los suyos dentro del contenido, para no acabar con
@@ -69,6 +76,7 @@ const {
   country,
   noindex = false,
   bare = false,
+  back,
   rails = true,
 } = Astro.props;
 
@@ -88,7 +96,12 @@ const robots = noindex
 <html lang={LANG} dir={DIR}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/*
+      `viewport-fit=cover` deja que el sitio instalado ocupe la pantalla entera,
+      muesca incluida. Las zonas seguras las respetan la cabecera, la barra de
+      pestañas y las hojas con env(safe-area-inset-*).
+    */}
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
     <title>{fullTitle}</title>
     <meta name="description" content={desc} />
@@ -134,8 +147,20 @@ const robots = noindex
     <meta name="twitter:image" content={`${SITE.url}${SITE.ogImage}`} />
     <meta name="twitter:image:alt" content={`${SITE.brand} — ${title}`} />
 
-    <meta name="theme-color" content={theme === 'paper' ? '#ffffff' : SITE.themeColor} />
+    {/*
+      Tinta en todas las páginas, también las claras: lo primero que se ve bajo
+      la barra del navegador es la cabecera, que es negra, y una franja blanca
+      encima la separaba del resto de la barra de app.
+    */}
+    <meta name="theme-color" content={SITE.themeColor} />
     <meta name="format-detection" content="telephone=no" />
+
+    {/* Instalable como app: nombre bajo el icono y barra de estado sobre la cabecera. */}
+    <meta name="application-name" content={SITE.brand} />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content={SITE.brand} />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/favicon.png" sizes="96x96" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -188,9 +213,24 @@ const robots = noindex
         window.dataLayer.push(Object.assign({ event: name }, params || {}));
       };
     </script>
+
+    {/*
+      Service worker: lo que hace que el sitio abra sin red y se pueda instalar.
+      Sólo en producción: en `astro dev` una caché de por medio sirve versiones
+      viejas de lo que se está editando. Qué cachea y qué no está en public/sw.js.
+    */}
+    {import.meta.env.PROD && (
+      <script is:inline>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js').catch(function () {});
+          });
+        }
+      </script>
+    )}
   </head>
 
-  <body data-theme={theme}>
+  <body data-theme={theme} class="app-shell">
     {/*
       Enlace de salto. Decía «Menú», que es la etiqueta del nav: quien navega
       con teclado o lector de pantalla lo oía anunciado como un menú y se
@@ -198,7 +238,7 @@ const robots = noindex
     */}
     <a href="#main" class="sr-only">{t('nav.skip')}</a>
 
-    <Header country={country} />
+    <Header country={country} back={back} />
 
     <main id="main">
       <slot />
@@ -206,7 +246,8 @@ const robots = noindex
 
     <Footer country={country} />
 
-    {!bare && <Dock country={country} />}
+    <TabBar country={country} />
+    <AppMenu country={country} />
     {!bare && <ExitIntent country={country} />}
     {!bare && <GeoNotice currentCountry={country?.code} />}
     {!bare && rails && <EdgeRails seed={`edge-${path || 'home'}`} />}

@@ -84,8 +84,9 @@ export default defineConfig({
 
   integrations: [
     sitemap({
-      // El redirector de afiliados nunca debe indexarse.
-      filter: (page) => !page.includes('/go/'),
+      // El redirector de afiliados nunca debe indexarse, y la pantalla sin
+      // conexión de la app sólo existe para el service worker.
+      filter: (page) => !page.includes('/go/') && !page.includes('/offline/'),
 
       /**
        * Una fecha y una prioridad por URL, no la misma para las 37.

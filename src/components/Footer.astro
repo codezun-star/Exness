@@ -155,15 +155,11 @@ const regulators = Object.values(ENTITIES).map(
     border-top: 2px solid var(--color-accent);
   }
 
-  /* El hueco del dock fijo va en la letra pequeña, que es lo último. */
+  /* El hueco de la barra de pestañas lo deja el cuerpo (.app-shell), no el pie. */
   .footer-fineprint {
     background: var(--color-paper);
     color: var(--color-ink);
-    padding-block: 0 6.5rem;
-  }
-
-  @media (min-width: 64rem) {
-    .footer-fineprint { padding-bottom: 2.5rem; }
+    padding-block: 0 2.5rem;
   }
 
   .footer-cta {

@@ -26,6 +26,19 @@
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 
+# El service worker se revalida en cada visita: si se cacheara, una versión
+# con un fallo quedaría viva en los móviles hasta que caducara.
+/sw.js
+  Cache-Control: no-cache
+  Content-Type: application/javascript; charset=utf-8
+
+/site.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
+  Cache-Control: public, max-age=86400
+
+/offline/*
+  X-Robots-Tag: noindex, nofollow
+
 /go/*
   X-Robots-Tag: noindex, nofollow
   Cache-Control: public, max-age=300

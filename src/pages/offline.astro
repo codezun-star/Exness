@@ -1,0 +1,57 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { useT } from '../i18n/ui';
+
+/**
+ * Pantalla sin conexión de la app instalada.
+ *
+ * No la visita nadie a propósito: el service worker (public/sw.js) la guarda
+ * al instalarse y la sirve cuando falla la red y la página pedida no está en
+ * caché. Por eso es `noindex`, queda fuera del sitemap y no lleva raíles ni
+ * avisos flotantes. La cabecera y la barra de pestañas sí, para que siga
+ * pareciendo la app y se pueda volver a lo que ya estaba guardado.
+ */
+const t = useT();
+---
+
+<Base
+  title={t('app.offlineTitle')}
+  description={t('app.offlineSub')}
+  path="offline"
+  noindex
+  bare
+  rails={false}
+>
+  <section class="band band-paper offline">
+    <div class="wrap-narrow">
+      <span class="offline-icon"><Icon name="offline" size={40} /></span>
+      <h1 class="display display-l offline-title">{t('app.offlineTitle')}</h1>
+      <p class="lede offline-sub">{t('app.offlineSub')}</p>
+      <button class="btn btn-invert offline-retry" type="button" data-retry>{t('app.retry')}</button>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .offline { min-block-size: 60dvh; }
+
+  .offline-icon {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 4.5rem;
+    block-size: 4.5rem;
+    margin-bottom: 1.75rem;
+    background: var(--color-accent);
+    color: var(--color-ink);
+  }
+
+  .offline-title { margin-bottom: 1.25rem; }
+  .offline-sub { margin: 0 0 2rem; }
+</style>
+
+<script>
+  document.querySelector('[data-retry]')?.addEventListener('click', () => location.reload());
+  // En cuanto vuelve la red, la página que se pidió se carga sola.
+  window.addEventListener('online', () => location.reload());
+</script>

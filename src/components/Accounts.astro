@@ -21,7 +21,7 @@ const nf = new Intl.NumberFormat('en-US');
     <p class="lede accounts-lede">{t('accounts.sub')}</p>
 
     <div class="table-scroll">
-      <table class="data">
+      <table class="data accounts-table">
         <thead>
           <tr>
             <th scope="col">{t('accounts.col.type')}</th>
@@ -39,10 +39,10 @@ const nf = new Intl.NumberFormat('en-US');
                 {account.name}
                 {account.featured && <span class="tag">{t('accounts.recommended')}</span>}
               </th>
-              <td class="num">{nf.format(account.minDeposit)} USD</td>
-              <td class="num">{account.spreadFrom === '—' ? '—' : `${account.spreadFrom} pips`}</td>
-              <td class="num">{account.commission}</td>
-              <td class="num">{account.lotSize}</td>
+              <td class="num" data-label={t('accounts.col.min')}>{nf.format(account.minDeposit)} USD</td>
+              <td class="num" data-label={t('accounts.col.spread')}>{account.spreadFrom === '—' ? '—' : `${account.spreadFrom} pips`}</td>
+              <td class="num" data-label={t('accounts.col.commission')}>{account.commission}</td>
+              <td class="num" data-label={t('accounts.col.lot')}>{account.lotSize}</td>
               <td class="account-action">
                 <a
                   href={goUrl('real', `accounts-${account.key}`, country?.code)}
@@ -85,6 +85,85 @@ const nf = new Intl.NumberFormat('en-US');
   }
 
   .account-action a:hover { color: var(--color-ink); }
+
+  /*
+    En móvil la tabla deja de serlo: seis columnas en 390 px obligaban a
+    desplazar de lado para ver la comisión, que es justo el dato que
+    distingue una cuenta de otra. Cada cuenta pasa a ser una ficha de lista
+    —nombre arriba, cuatro datos en rejilla de dos, acción a todo lo ancho—
+    y cada dato lleva su etiqueta desde data-label, porque la cabecera de la
+    tabla ya no está encima.
+  */
+  @media (max-width: 47.99rem) {
+    .table-scroll { overflow: visible; }
+
+    .accounts-table,
+    .accounts-table tbody { display: block; min-width: 0; }
+
+    .accounts-table thead { display: none; }
+
+    .accounts-table tbody { border-top: 1px solid var(--color-line); }
+
+    .accounts-table tr {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.875rem 1rem;
+      padding-block: 1.25rem 0.5rem;
+      border-bottom: 1px solid var(--color-line);
+    }
+
+    .accounts-table th,
+    .accounts-table td {
+      padding: 0;
+      border: 0;
+    }
+
+    .accounts-table .account-name {
+      grid-column: 1 / -1;
+      font-size: 1.125rem;
+    }
+
+    .accounts-table td.num {
+      font-size: 0.9375rem;
+      white-space: normal;
+    }
+
+    .accounts-table td.num::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 0.25rem;
+      font-family: var(--font-sans);
+      font-size: 0.625rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+
+    /* La recomendada conserva su fondo y su filete, ahora sobre la fila entera. */
+    .accounts-table tr.featured {
+      margin-inline: -1rem;
+      padding-inline: 1rem;
+      box-shadow: inset 3px 0 0 var(--color-accent);
+    }
+
+    .accounts-table .account-action {
+      grid-column: 1 / -1;
+      text-align: start;
+    }
+
+    .accounts-table .account-action a {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-block-size: 2.75rem;
+      border-bottom: 0;
+      border-top: 1px solid var(--color-line);
+      padding-bottom: 0;
+    }
+
+    .accounts-table .account-action a::after { content: '→'; font-size: 1rem; }
+  }
 
   .accounts-note {
     margin: 1.75rem 0 0;

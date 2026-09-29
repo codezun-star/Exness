@@ -1,0 +1,391 @@
+---
+import Icon from './Icon.astro';
+import { goUrl } from '../config/affiliate';
+import type { Country } from '../config/countries';
+import { useT, countryPath, blogPath, legalPath } from '../i18n/ui';
+
+interface Props {
+  country?: Country;
+}
+
+const { country } = Astro.props;
+const t = useT(country);
+
+/**
+ * Hoja de menú: lo que en escritorio es la navegación de la cabecera y en
+ * móvil era un desplegable bajo la hamburguesa. Sube desde abajo, como el
+ * resto de hojas de la app, y se cierra con el aspa, con Escape, pulsando
+ * fuera o arrastrándola hacia abajo.
+ *
+ * Es un <dialog> modal a propósito: trae de serie la trampa de foco, el
+ * cierre con Escape y el fondo inerte, y el aspa va en un <form
+ * method="dialog"> para que cierre aunque el JavaScript no llegue a correr.
+ */
+const home = country ? countryPath(country.code) : '/';
+const market = country ? undefined : true;
+
+const nav = [
+  { icon: 'accounts', label: t('nav.accounts'), href: `${home}#cuentas`, market },
+  { icon: 'platforms', label: t('nav.platforms'), href: `${home}#plataformas`, market },
+  { icon: 'countries', label: t('nav.countries'), href: country ? `${home}#paises` : '/' },
+  { icon: 'blog', label: t('nav.blog'), href: blogPath() },
+  { icon: 'faq', label: t('nav.faq'), href: `${home}#faq`, market },
+] as const;
+
+const legal = [
+  { label: t('legal.risk'), href: legalPath('risk') },
+  { label: t('legal.affiliate'), href: legalPath('affiliate') },
+  { label: t('legal.privacy'), href: legalPath('privacy') },
+  { label: t('legal.terms'), href: legalPath('terms') },
+  { label: t('legal.cookies'), href: legalPath('cookies') },
+];
+---
+
+<dialog class="sheet on-ink" id="app-menu" aria-labelledby="app-menu-title">
+  <div class="sheet-head" data-sheet-drag>
+    <span class="sheet-grip" aria-hidden="true"></span>
+    <p class="sheet-title" id="app-menu-title">{t('nav.menu')}</p>
+    <form method="dialog">
+      <button class="sheet-close" aria-label={t('nav.close')} data-sheet-close>
+        <Icon name="close" size={20} />
+      </button>
+    </form>
+  </div>
+
+  <div class="sheet-body">
+    <nav aria-label={t('nav.menu')}>
+      <ul class="sheet-list">
+        {nav.map((item) => (
+          <li>
+            <a class="sheet-row" href={item.href} data-market-link={'market' in item ? item.market : undefined}>
+              <Icon name={item.icon} />
+              <span class="sheet-row-label">{item.label}</span>
+              <Icon name="next" size={16} class="sheet-row-next" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <ul class="sheet-list">
+      <li>
+        <button class="sheet-row" type="button" data-open-countries>
+          <Icon name="countries" />
+          <span class="sheet-row-label">{t('app.country')}</span>
+          <span class="sheet-row-value mono" data-country-label>{country ? country.code.toUpperCase() : t('country.label')}</span>
+          <Icon name="next" size={16} class="sheet-row-next" />
+        </button>
+      </li>
+      {/* Sólo aparece cuando el navegador ofrece instalar, o en iOS fuera de la app. */}
+      <li data-install hidden>
+        <button class="sheet-row" type="button" data-install-button>
+          <Icon name="install" />
+          <span class="sheet-row-label">
+            {t('app.install')}
+            <small class="sheet-row-sub" data-install-sub data-ios={t('app.installIos')}>{t('app.installSub')}</small>
+          </span>
+        </button>
+      </li>
+    </ul>
+
+    <a
+      class="btn btn-accent btn-block sheet-cta"
+      href={goUrl('real', 'menu', country?.code)}
+      rel="sponsored nofollow noopener"
+      data-cta="menu"
+    >{t('nav.cta')}</a>
+
+    <p class="sheet-section">{t('footer.legal')}</p>
+    <ul class="sheet-legal">
+      {legal.map((item) => (
+        <li><a href={item.href}>{item.label}</a></li>
+      ))}
+    </ul>
+
+    <p class="sheet-risk">{t('risk.short')}</p>
+  </div>
+</dialog>
+
+<style>
+  .sheet-list {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    border-top: 1px solid var(--color-line-ink);
+  }
+
+  .sheet-row {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    inline-size: 100%;
+    min-block-size: 3.25rem;
+    padding: 0.5rem 0.25rem;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid var(--color-line-ink);
+    color: var(--color-paper);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+  }
+
+  .sheet-row > :global(.icon) {
+    flex: none;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    color: var(--color-accent);
+  }
+
+  .sheet-row:active { background: var(--color-ink-3); }
+
+  @media (hover: hover) {
+    .sheet-row:hover { color: var(--color-accent-2); }
+  }
+
+  .sheet-row-label {
+    flex: 1;
+    min-inline-size: 0;
+  }
+
+  .sheet-row-sub {
+    display: block;
+    margin-top: 0.125rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--color-muted);
+  }
+
+  .sheet-row-value {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--color-muted);
+  }
+
+  .sheet-row :global(.sheet-row-next) {
+    flex: none;
+    color: var(--color-muted);
+  }
+
+  .sheet-cta { margin-bottom: 1.75rem; }
+
+  .sheet-section {
+    margin: 0 0 0.5rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .sheet-legal {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
+  }
+
+  .sheet-legal a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-muted-2);
+    text-decoration: none;
+  }
+
+  .sheet-legal a:active { color: var(--color-paper); }
+
+  .sheet-risk {
+    margin: 1rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-line-ink);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+</style>
+
+<script>
+  /**
+   * Comportamiento de todas las hojas (<dialog class="sheet">) del sitio:
+   * abrir desde cualquier [data-sheet-open], cerrar con animación, cerrar al
+   * pulsar el fondo y arrastrar hacia abajo para descartar.
+   */
+  const sheets = document.querySelectorAll<HTMLDialogElement>('dialog.sheet');
+
+  /** Cierre animado. Si la animación no llega a dispararse, cierra igual. */
+  const dismiss = (sheet: HTMLDialogElement) => {
+    if (!sheet.open || sheet.dataset.state === 'closing') return;
+    sheet.dataset.state = 'closing';
+    const done = () => {
+      clearTimeout(fallback);
+      sheet.removeEventListener('animationend', done);
+      sheet.close();
+      delete sheet.dataset.state;
+      sheet.style.removeProperty('transform');
+    };
+    const fallback = setTimeout(done, 320);
+    sheet.addEventListener('animationend', done);
+  };
+
+  document.addEventListener('click', (event) => {
+    const opener = (event.target as Element | null)?.closest?.('[data-sheet-open]');
+    if (!opener) return;
+    const sheet = document.getElementById(opener.getAttribute('data-sheet-open') ?? '');
+    if (!(sheet instanceof HTMLDialogElement) || sheet.open) return;
+    // Un único panel abierto a la vez: el de países es un <details>.
+    document.querySelectorAll<HTMLDetailsElement>('details[open]').forEach((d) => (d.open = false));
+    sheet.showModal();
+    window.track?.('app_sheet', { sheet: sheet.id });
+  });
+
+  sheets.forEach((sheet) => {
+    // Escape: se sustituye el cierre seco por el animado.
+    sheet.addEventListener('cancel', (event) => {
+      event.preventDefault();
+      dismiss(sheet);
+    });
+
+    sheet.querySelectorAll('[data-sheet-close]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        dismiss(sheet);
+      });
+    });
+
+    // Pulsar el fondo: el destino del clic es el propio <dialog>, fuera de su caja.
+    sheet.addEventListener('click', (event) => {
+      if (event.target !== sheet) return;
+      const box = sheet.getBoundingClientRect();
+      if (event.clientY < box.top) dismiss(sheet);
+    });
+
+    // Navegar a un ancla de la misma página: la hoja se cierra para dejar ver
+    // el destino. El resto de enlaces cambian de página y no hace falta.
+    sheet.querySelectorAll<HTMLAnchorElement>('a[href*="#"]').forEach((link) => {
+      link.addEventListener('click', () => {
+        const url = new URL(link.href, location.href);
+        if (url.pathname === location.pathname) dismiss(sheet);
+      });
+    });
+
+    // Arrastrar hacia abajo desde la cabecera de la hoja.
+    const handle = sheet.querySelector<HTMLElement>('[data-sheet-drag]');
+    if (!handle) return;
+
+    let startY = 0;
+    let startT = 0;
+    let dy = 0;
+    let dragging = false;
+
+    handle.addEventListener('pointerdown', (event) => {
+      if ((event.target as Element).closest('button')) return;
+      dragging = true;
+      startY = event.clientY;
+      startT = event.timeStamp;
+      dy = 0;
+      handle.setPointerCapture(event.pointerId);
+      sheet.style.transition = 'none';
+    });
+
+    handle.addEventListener('pointermove', (event) => {
+      if (!dragging) return;
+      dy = Math.max(0, event.clientY - startY);
+      sheet.style.transform = `translateY(${dy}px)`;
+    });
+
+    const release = (event: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      sheet.style.removeProperty('transition');
+      const velocity = dy / Math.max(1, event.timeStamp - startT);
+      // Se descarta si baja más de un tercio de su altura o con un gesto rápido.
+      if (dy > sheet.offsetHeight / 3 || (dy > 40 && velocity > 0.6)) {
+        dismiss(sheet);
+      } else {
+        sheet.style.removeProperty('transform');
+      }
+    };
+
+    handle.addEventListener('pointerup', release);
+    handle.addEventListener('pointercancel', release);
+  });
+
+  // Al volver atrás, el navegador puede restaurar la página tal como quedó,
+  // con la hoja abierta encima. Una app vuelve a la pantalla, no al menú.
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    sheets.forEach((sheet) => sheet.open && sheet.close());
+    document.querySelectorAll<HTMLDetailsElement>('.country-switch[open]').forEach((d) => (d.open = false));
+  });
+
+  // «Tu país»: cierra el menú y abre el selector de la cabecera, que en móvil
+  // también es una hoja. No se duplica la lista de mercados.
+  document.querySelector('[data-open-countries]')?.addEventListener('click', () => {
+    const menu = document.getElementById('app-menu') as HTMLDialogElement | null;
+    const picker = document.querySelector<HTMLDetailsElement>('.country-switch');
+    if (menu?.open) menu.close();
+    if (picker) {
+      picker.open = true;
+      picker.querySelector<HTMLElement>('.country-panel a')?.focus({ preventScroll: true });
+    }
+  });
+
+  /**
+   * Instalar la app. Chrome y Edge avisan con `beforeinstallprompt` cuando el
+   * sitio cumple los requisitos; iOS no tiene ese evento y sólo se instala a
+   * mano desde Compartir, así que ahí la fila explica el gesto.
+   */
+  interface InstallPrompt extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+  }
+
+  const row = document.querySelector<HTMLElement>('[data-install]');
+  const button = document.querySelector<HTMLButtonElement>('[data-install-button]');
+  const sub = document.querySelector<HTMLElement>('[data-install-sub]');
+  const standalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
+  const ios =
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+  let deferred: InstallPrompt | null = null;
+
+  if (row && button && !standalone) {
+    if (ios && sub?.dataset.ios) {
+      sub.textContent = sub.dataset.ios;
+      row.hidden = false;
+    }
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferred = event as InstallPrompt;
+      row.hidden = false;
+    });
+
+    button.addEventListener('click', async () => {
+      if (!deferred) return;
+      await deferred.prompt();
+      const { outcome } = await deferred.userChoice;
+      window.track?.('app_install', { outcome });
+      deferred = null;
+      row.hidden = true;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      row.hidden = true;
+      window.track?.('app_installed');
+    });
+  }
+</script>

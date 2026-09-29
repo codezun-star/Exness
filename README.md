@@ -200,7 +200,7 @@ Tres cosas son oscuras en un sitio claro: las bandas `.band-ink`, el documento
 entero cuando pide `data-theme="ink"` (404 y redirector), y una familia de
 superficies flotantes que no son bandas y por tanto nunca heredarían nada:
 cabecera, panel de países, aviso geográfico, barra de cookies, modal de salida,
-dock y tira del blog.
+barra de pestañas, hojas de la app y tira del blog.
 
 Esas últimas llevan **`.on-ink`**. Que la clase exista importa: sin ella cada
 superficie flotante se pintaba con los valores pensados para papel, y el
@@ -220,6 +220,48 @@ Dos correcciones salieron de ahí y están en el CSS con su comentario:
 `--color-muted` pasó de `#75757d` a `#6b6b73` (daba 4,15:1 sobre el papel
 secundario, por debajo del 4,5:1 que pide la norma), y dentro de un ámbito
 oscuro esa misma variable se redefine al gris claro.
+
+---
+
+## Móvil: el sitio como app
+
+Por debajo de 64rem el sitio no se comporta como una web encogida sino como
+una app nativa, y se puede **instalar** en la pantalla de inicio.
+
+| Pieza | Archivo | Qué hace |
+| --- | --- | --- |
+| Barra superior | `Header.astro` | Opaca y compacta (3,5rem). En artículos y legales lleva la flecha de volver, que deshace el último paso del historial si viene del propio sitio |
+| Barra de pestañas | `TabBar.astro` | Inicio · Cuentas · **Abrir cuenta** · Blog · Más, fija abajo y al alcance del pulgar. «Cuentas» se marca activa mientras la tabla ocupa la pantalla |
+| Hoja de menú | `AppMenu.astro` | «Más» abre un `<dialog>` que sube desde abajo: navegación, país, instalar la app, CTA y legales. Se cierra con el aspa, Escape, pulsando fuera o arrastrando hacia abajo |
+| Selector de país | `CountrySwitcher.astro` | En móvil también es una hoja inferior con velo; en escritorio sigue siendo el desplegable |
+| Modal de salida | `ExitIntent.astro` | En móvil sube como hoja |
+| Tablas | `Accounts.astro` · `Compare.astro` | La de cuentas pasa a fichas apiladas con etiqueta por dato; la comparativa cabe sin scroll lateral |
+| Transiciones | `global.css` | `@view-transition`: fundido entre páginas con la cabecera y las pestañas quietas. Sin JavaScript |
+| Iconos | `Icon.astro` | Sólo en la navegación. El contenido sigue sin iconos |
+
+La barra de pestañas **sustituye al antiguo dock** de conversión y a la
+hamburguesa: el CTA principal vive ahora en su centro (`?s=tabbar`) y en la
+hoja de menú (`?s=menu`).
+
+### Instalable y sin conexión
+
+- `public/site.webmanifest` — nombre, colores, iconos de 192 y 512 px (más uno
+  *maskable* con el símbolo dentro de la zona segura) y accesos directos a
+  Cuentas, Países y Blog.
+- `public/sw.js` — service worker. Las páginas van **siempre a la red
+  primero** (las condiciones tienen que estar al día) y sólo sin red se sirve
+  la última copia o `/offline/`. Los recursos con hash de `/_astro/` y la marca
+  se sirven de caché. **No toca `/go/`** —cada clic de afiliado tiene que
+  llegar al servidor— ni `/cdn-cgi/` ni otros dominios. Sólo se registra en
+  producción. Si cambias su lógica, sube `VERSION`.
+- `src/pages/offline.astro` — pantalla sin conexión: `noindex` y fuera del
+  sitemap.
+- La fila «Instalar la app» del menú aparece cuando el navegador lo permite
+  (`beforeinstallprompt` en Chrome/Edge) o, en iOS, explica el gesto de
+  Compartir → Añadir a pantalla de inicio.
+
+`npm run brand` genera también `brand/icon-192.png` y
+`brand/icon-maskable-512.png`.
 
 ---
 
@@ -268,6 +310,7 @@ versionados en `brand-source/`:
 | `favicon.png` · `favicon-32.png` | Pestaña del navegador |
 | `apple-touch-icon.png` | Pantalla de inicio de iOS |
 | `brand/icon-512.png` | JSON-LD `Organization.logo` y `site.webmanifest` |
+| `brand/icon-192.png` · `icon-maskable-512.png` | Icono de la app instalada (Android recorta el *maskable* con su forma) |
 | `og/default.jpg` | Vista previa al compartir (1200x630) |
 
 Todos se sirven con caché inmutable de un año (`public/_headers`).
@@ -316,7 +359,7 @@ Ningún botón enlaza directamente a `one.exnessonelink.com`. Todos pasan por
 ```
 /go/real/?s=hero&c=mx
          │      │    └─ país, para saber qué mercado convierte
-         │      └────── posición del botón (hero, dock, footer, blog-…)
+         │      └────── posición del botón (hero, tabbar, footer, blog-…)
          └───────────── cuál de tus enlaces
 ```
 

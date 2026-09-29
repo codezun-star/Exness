@@ -97,6 +97,23 @@ const leverage = (entity ?? DEFAULT_ENTITY).maxLeverage;
 
   .exit::backdrop { background: rgba(11, 11, 12, 0.86); }
 
+  /* En móvil es una hoja inferior, como el resto de paneles de la app: el
+     pulgar llega al botón y al «ahora no» sin estirarse. */
+  @media (max-width: 39.99rem) {
+    .exit {
+      inset: auto 0 0;
+      inline-size: 100%;
+      max-inline-size: 100%;
+      max-block-size: 88dvh;
+      margin: 0;
+      border-inline: 0;
+      border-bottom: 0;
+      padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    }
+
+    .exit[open] { animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  }
+
   .exit[open] { animation: exit-in 180ms ease-out; }
   .exit[open]::backdrop { animation: exit-fade 180ms ease-out; }
 

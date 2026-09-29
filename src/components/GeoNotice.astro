@@ -56,7 +56,9 @@ const data = {
   .geo {
     position: fixed;
     inset-inline: 0;
-    top: 4.25rem;
+    /* Cuelga de la cabecera, que en móvil es más baja y en la app instalada
+       se extiende bajo la barra de estado. */
+    top: calc(var(--app-bar-h) + env(safe-area-inset-top));
     z-index: 45;
     background: var(--color-ink-2);
     border-block: 1px solid var(--color-line-ink);

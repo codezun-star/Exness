@@ -22,7 +22,20 @@ const es = {
   'nav.faq': 'Preguntas',
   'nav.cta': 'Abrir cuenta',
   'nav.menu': 'Menú',
+  'nav.more': 'Más',
+  'nav.back': 'Volver',
+  'nav.close': 'Cerrar',
+  'nav.main': 'Navegación principal',
   'nav.skip': 'Saltar al contenido',
+
+  // ── Capa de app (móvil / instalada) ───────────────────────────
+  'app.country': 'Tu país',
+  'app.install': 'Instalar la app',
+  'app.installSub': 'Acceso directo en tu pantalla de inicio, sin tienda de apps.',
+  'app.installIos': 'En Safari, toca Compartir y luego «Añadir a pantalla de inicio».',
+  'app.offlineTitle': 'Sin conexión',
+  'app.offlineSub': 'Ahora mismo no hay red. Las páginas que ya abriste siguen disponibles; el resto se carga en cuanto vuelva la conexión.',
+  'app.retry': 'Reintentar',
 
   // ── Barra superior de urgencia ────────────────────────────────
   'bar.text': 'Registro abierto · Depósito desde {min} USD · Retiros instantáneos 24/7',

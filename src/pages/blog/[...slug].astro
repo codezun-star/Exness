@@ -84,6 +84,7 @@ const schema = graph(
   tags={post.data.tags}
   schema={schema}
   rails={false}
+  back={{ href: blogPath(), label: t('nav.blog') }}
 >
   <article class="band-paper post">
     <SideRails seed={`rail-${slug}`}>
