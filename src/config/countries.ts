@@ -6,8 +6,12 @@ import { BLOCKED_COUNTRIES, ENTITIES } from './offers';
  * país sólo aporta lo que de verdad cambia entre jurisdicciones: la entidad
  * de Exness que atiende, la divisa, los métodos de depósito y los activos.
  *
- * Cada país genera una página en /{code}/. Añadir un mercado = añadir un
- * objeto aquí. Nada más.
+ * Un país ya no genera una página propia: su página es la guía del blog
+ * /blog/exness-en-{país}/ (ver guideSlug()), o la portada si aún no está
+ * escrita. Las antiguas landings /{code}/ eran la misma plantilla con el
+ * nombre cambiado —un 81% de texto compartido entre cualquier par— y
+ * redirigen con 301 desde public/_redirects. Añadir un mercado = añadir un
+ * objeto aquí, escribir su guía y su redirección.
  *
  * ⚠️ Antes de añadir uno, comprueba que no está en BLOCKED_COUNTRIES. Ya no
  * hace falta hacerlo de memoria: assertMarketsAllowed(), al final de este
@@ -121,6 +125,26 @@ export function countryHreflang(country: Country): string {
   return `es-${country.code.toUpperCase()}`;
 }
 
+/** "República Dominicana" → "republica-dominicana". */
+export function slugifyName(name: string): string {
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+/**
+ * Slug de la guía del mercado en el blog: "exness-en-republica-dominicana".
+ *
+ * Se deriva del nombre en vez de guardarse en un campo aparte, así que añadir
+ * un mercado y su artículo no obliga a mantener un mapa sincronizado a mano.
+ */
+export function guideSlug(country: Country): string {
+  return `exness-en-${slugifyName(country.name)}`;
+}
+
 /** Locale de Open Graph, p. ej. "es_MX". */
 export function countryLocale(country: Country): string {
   return `es_${country.code.toUpperCase()}`;
@@ -151,7 +175,7 @@ function assertMarketsAllowed(): void {
       throw new Error(
         `[countries] ${country.name} (${country.code}) está en BLOCKED_COUNTRIES: ` +
         'Exness no acepta a sus residentes. Elimina el mercado de COUNTRIES ' +
-        'y su entrada de LOCAL_COPY en vez de publicar una landing que no convierte.',
+        'en vez de enlazar a su guía un mercado que no convierte.',
       );
     }
 

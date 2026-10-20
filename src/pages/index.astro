@@ -16,7 +16,7 @@ import Video from '../components/Video.astro';
 
 import { COUNTRIES } from '../config/countries';
 import { useT, countryPath, DEFAULT_ENTITY, type UIKey } from '../i18n/ui';
-import { abs, countryAlternates } from '../lib/seo';
+import { abs } from '../lib/seo';
 import {
   graph, organization, website, webPage, brokerEntity,
   breadcrumbs, faqPage, howTo, itemList,
@@ -73,7 +73,6 @@ const schema = graph(
   title={title}
   description={description}
   path=""
-  alternates={countryAlternates()}
   schema={schema}
 >
   <Ticker />

@@ -3,7 +3,7 @@ import { SITE, BRAND } from '../config/site';
 import { PARTNER_CODE, goUrl } from '../config/affiliate';
 import { ENTITIES } from '../config/offers';
 import { COUNTRIES_BY_TIER, siblingsOf, type Country } from '../config/countries';
-import { useT, countryPath, blogPath, legalPath } from '../i18n/ui';
+import { useT, countryPath, hasGuide, blogPath, legalPath } from '../i18n/ui';
 
 interface Props {
   country?: Country;
@@ -11,11 +11,13 @@ interface Props {
 
 const { country } = Astro.props;
 const t = useT(country);
-const home = country ? countryPath(country.code) : '/';
+const home = '/';
 const year = new Date().getFullYear();
 
 /** Mercados vecinos del país actual; fuera de un país, los prioritarios. */
-const markets = (country ? siblingsOf(country) : COUNTRIES_BY_TIER).slice(0, 10);
+const markets = (country ? siblingsOf(country) : COUNTRIES_BY_TIER)
+  .filter((c) => hasGuide(c.code))
+  .slice(0, 10);
 
 const legal = [
   { label: t('legal.risk'), href: legalPath('risk') },
@@ -28,7 +30,7 @@ const legal = [
 const nav = [
   { label: t('nav.accounts'), href: `${home}#cuentas` },
   { label: t('nav.platforms'), href: `${home}#plataformas` },
-  { label: t('nav.countries'), href: country ? `${home}#paises` : '/' },
+  { label: t('nav.countries'), href: `${home}#paises` },
   { label: t('nav.blog'), href: blogPath() },
   { label: t('nav.faq'), href: `${home}#faq` },
 ];

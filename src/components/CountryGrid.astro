@@ -1,9 +1,9 @@
 ---
 import {
-  COUNTRIES_BY_TIER, siblingsOf, countryEntity, countryHreflang,
+  COUNTRIES_BY_TIER, siblingsOf, countryEntity,
 } from '../config/countries';
 import type { Country } from '../config/countries';
-import { useT, countryPath } from '../i18n/ui';
+import { useT, countryPath, hasGuide } from '../i18n/ui';
 
 interface Props {
   country?: Country;
@@ -13,7 +13,7 @@ const { country } = Astro.props;
 const t = useT(country);
 
 /** Enlaces internos hacia el resto de mercados; `siblingsOf` excluye el actual. */
-const list = country ? siblingsOf(country) : COUNTRIES_BY_TIER;
+const list = (country ? siblingsOf(country) : COUNTRIES_BY_TIER).filter((c) => hasGuide(c.code));
 ---
 
 {list.length > 0 && (
@@ -28,7 +28,6 @@ const list = country ? siblingsOf(country) : COUNTRIES_BY_TIER;
           <li>
             <a
               href={countryPath(c.code)}
-              hreflang={countryHreflang(c)}
             >
               <span class="code">{c.code.toUpperCase()}</span>
               <span class="country-name">{c.name}</span>

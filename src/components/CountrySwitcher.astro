@@ -1,5 +1,5 @@
 ---
-import { COUNTRIES, countryHreflang, type Country } from '../config/countries';
+import { COUNTRIES, type Country } from '../config/countries';
 import { useT, countryPath } from '../i18n/ui';
 
 interface Props {
@@ -39,7 +39,6 @@ const tiered = [1, 2, 3].map((tier) => ({
             <li>
               <a
                 href={countryPath(c.code)}
-                hreflang={countryHreflang(c)}
                 data-market-pick={c.code}
                 rel={c.code === country?.code ? 'nofollow' : undefined}
               >

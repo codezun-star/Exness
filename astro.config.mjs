@@ -7,7 +7,6 @@ import sitemap from '@astrojs/sitemap';
 import { EnumChangefreq } from 'sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
-import { COUNTRIES } from './src/config/countries';
 import { LEGAL_PAGES } from './src/config/legal';
 
 const SITE_URL = 'https://exness.inversax.com';
@@ -53,13 +52,6 @@ function blogDates() {
 
 const BLOG_DATES = blogDates();
 
-/** Prioridad por tier de mercado: 1 = prioritario, 3 = cola larga. */
-const TIER_PRIORITY = { 1: 0.9, 2: 0.8, 3: 0.7 };
-
-const MARKET_URLS = new Map(
-  COUNTRIES.map((c) => [`${SITE_URL}/${c.code}/`, c.tier]),
-);
-
 const LEGAL_URLS = new Set(
   LEGAL_PAGES.map((page) => `${SITE_URL}/legal/${page}/`),
 );
@@ -74,13 +66,12 @@ export default defineConfig({
   //
   // El enrutado i18n de Astro parte de que el idioma es un prefijo de URL y de
   // que existe una portada por idioma. Aquí la dimensión es el país, no el
-  // idioma: las 15 landings están todas en español y se diferencian por el
-  // mercado al que apuntan. Un idioma nunca es un segmento de ruta, así que no
-  // hay nada que declarar.
+  // idioma, y todo el sitio está en español. Un idioma nunca es un segmento de
+  // ruta, así que no hay nada que declarar.
   //
-  // Los hreflang del HTML los genera countryAlternates() en src/lib/seo.ts:
-  // un único grupo con las 15 landings anotadas como idioma-región (es-MX,
-  // es-CO, es-AR…) y x-default en la raíz.
+  // Sin hreflang: las 15 landings de país que formaban el grupo se retiraron
+  // y cada mercado vive en su guía del blog, que no es una variante regional
+  // de otra página sino un artículo propio.
 
   integrations: [
     sitemap({
@@ -89,17 +80,17 @@ export default defineConfig({
       filter: (page) => !page.includes('/go/') && !page.includes('/offline/'),
 
       /**
-       * Una fecha y una prioridad por URL, no la misma para las 37.
+       * Una fecha y una prioridad por URL, no la misma para todas.
        *
        * Antes el sitemap salía con `lastmod` = hora del build y `priority` =
        * 0.7 en todas las URLs. Las dos señales quedaban inservibles: un
        * `lastmod` que cambia en cada despliegue sin que cambie el contenido es
        * justo el patrón que lleva a Google a dejar de leer el campo del sitio
        * entero —lo dice su documentación—, y una prioridad plana no ordena
-       * nada. Los artículos ya traían su fecha en el frontmatter y los
-       * mercados su tier en countries.ts; sólo había que usarlos.
+       * nada. Los artículos ya traían su fecha en el frontmatter; sólo había
+       * que usarla.
        *
-       * Las páginas sin fecha propia (portada, mercados, legales) se quedan
+       * Las páginas sin fecha propia (portada, legales) se quedan
        * con la del build: es lo único honesto que se puede afirmar de una
        * página generada a partir de configuración y copy.
        */
@@ -112,7 +103,8 @@ export default defineConfig({
             ...item,
             lastmod: posted.toISOString(),
             changefreq: EnumChangefreq.MONTHLY,
-            priority: 0.8,
+            // La guía de cada país es ahora la página de ese mercado.
+            priority: url.includes('/blog/exness-en-') ? 0.9 : 0.8,
           };
         }
 
@@ -126,16 +118,6 @@ export default defineConfig({
             lastmod: BUILD_DATE.toISOString(),
             changefreq: EnumChangefreq.YEARLY,
             priority: 0.3,
-          };
-        }
-
-        const tier = MARKET_URLS.get(url);
-        if (tier) {
-          return {
-            ...item,
-            lastmod: BUILD_DATE.toISOString(),
-            changefreq: EnumChangefreq.WEEKLY,
-            priority: TIER_PRIORITY[tier],
           };
         }
 

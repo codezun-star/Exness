@@ -1,11 +1,11 @@
 # exness.inversax.com
 
 Sitio de afiliación para el bróker **Exness**, en español y dirigido a los
-mercados hispanoamericanos: 15 landings de país con las condiciones que aplican
-en cada jurisdicción, blog en Markdown y una capa de SEO / AEO / GEO montada
-desde el primer commit.
+mercados hispanoamericanos: 15 mercados, 10 de ellos con su guía escrita a
+mano, blog en Markdown y una capa de SEO / AEO / GEO montada desde el primer
+commit.
 
-**41 páginas estáticas** (37 indexables). Sin base de datos, sin servidor, sin
+**27 páginas estáticas** (22 indexables). Sin base de datos, sin servidor, sin
 JavaScript de framework en el cliente.
 
 Réplica estructural del sitio de XM del mismo autor, con la misma arquitectura y
@@ -20,7 +20,7 @@ abajo: Exness no da bonos, no acepta España, y la paleta es amarilla.
 | --- | --- | --- |
 | [Astro](https://astro.build) | 7.2.2 | HTML estático, cero JS por defecto, compilador Rust y Vite 8 |
 | Tailwind CSS | 4.3.3 | Vía `@tailwindcss/vite`, sin PostCSS |
-| `@astrojs/sitemap` | 3.7.3 | Sitemap con `hreflang` automático |
+| `@astrojs/sitemap` | 3.7.3 | Sitemap con fecha y prioridad por URL |
 | `@astrojs/rss` | 4.0.19 | Feed del blog |
 | `sharp` | 0.35.3 | Genera la marca y la imagen Open Graph |
 
@@ -266,6 +266,39 @@ hoja de menú (`?s=menu`).
 ---
 
 
+## Retirada de las landings de país (2026-10-20)
+
+Hasta esta fecha cada mercado tenía una landing `/mx/`, `/co/`… generada desde
+`countries.ts`, y diez de ellos además una guía `/blog/exness-en-<país>/`. Las
+landings eran la misma plantilla con el nombre del país cambiado — **un 81% de
+su texto se repetía entre cualquier par**, con máximos del 87% — mientras que
+las guías comparten un 15%.
+
+Search Console: el sitio salió en Google el 28 de agosto y el **17 de
+septiembre pasó de unas 25 impresiones diarias a cero**, sin acción manual y
+sin bloqueo técnico en el HTML. El commit de ese día se subió a las 20:26 UTC,
+cuando el día ya contaba cero, y no tocaba nada que pudiera desindexar. Es el
+patrón de un sitio nuevo que Google termina de evaluar y retira de los
+resultados: 15 páginas casi iguales que llevan todas a un enlace de afiliado
+son lo que sus políticas llaman *doorway pages*. Al sitio de XM, con la misma
+plantilla, le pasó lo mismo dos semanas antes.
+
+Lo que se hizo:
+
+- **Las 15 landings se borraron.** Las diez con guía redirigen con 301 a ella;
+  Guatemala, Costa Rica, Panamá, Paraguay y El Salvador, a la portada
+  (`public/_redirects`).
+- **`countryPath()` devuelve la guía**, o la portada si no hay. Las listas que
+  se presentan como «una guía por país» —retícula, pie, 404, aviso geográfico—
+  sólo muestran los países que la tienen (`hasGuide()`).
+- **Fuera el grupo `hreflang`**: sin landings no hay variantes regionales que
+  declarar.
+- **Las guías heredan el puente a `inversax.com`** (`Network.astro`), que antes
+  vivía en la landing.
+
+**No vuelvas a crear páginas por país generadas desde `countries.ts`.** Un
+mercado nuevo entra con su guía escrita a mano o no entra.
+
 ## Red Inversax
 
 Este sitio no está solo. Forma red con `inversax.com` —el comparador de siete
@@ -277,15 +310,15 @@ país y evita que las tres propiedades compitan por la misma consulta:
 | "exness en honduras", "exness es confiable" | este sitio |
 | "mejores brokers en honduras" | `inversax.com/brokers/hn` |
 
-El puente está en `src/components/Network.astro`, que se renderiza tras la FAQ
-de cada landing de país, y en el enlace de pie de `Footer.astro` (clave i18n
+El puente está en `src/components/Network.astro`, que se renderiza al pie de
+la guía de cada país, y en el enlace de pie de `Footer.astro` (clave i18n
 `network.footer`). **Los dos son enlaces seguidos**: apuntan a una propiedad
 propia y existen para transmitir señal, al contrario que los enlaces al bróker,
 que llevan `sponsored nofollow`. No les añadas `rel` restrictivo.
 
 Del otro lado, `inversax.com` enlaza aquí desde la ficha de Exness de cada
-página de país mediante `src/lib/sitiosBroker.ts`, que mantiene a mano la lista
-de países con landing. **Al añadir un mercado a `src/config/countries.ts` hay
+página de país mediante `src/lib/sitiosBroker.ts`, que mantiene a mano la guía
+de cada país. **Al añadir un mercado a `src/config/countries.ts` hay
 que añadirlo también allí**, o el enlace no se genera; y al revés, un país
 listado allí que no exista aquí produce un 404.
 
@@ -328,11 +361,11 @@ Si cambias los SVG, ejecuta `npm run brand` y ajusta en `src/config/site.ts` →
 ## Cómo funciona el enrutado
 
 ```
-/                       Portada (x-default, indexable)
-/mx/                    México — condiciones, pagos locales y entidad
-/co/  /cl/  /pe/ …      Los otros 14 mercados
+/                       Portada (indexable)
 /blog/                  Índice del blog
+/blog/exness-en-<país>/ Guía de un mercado: la página de ese país
 /blog/<slug>/           Artículo
+/mx/, /co/…             301 a la guía del país, o a la portada si no hay
 /legal/risk/            Aviso de riesgo (+ affiliate, privacy, terms, cookies)
 /go/real/?s=hero&c=mx   Redirector de afiliados (noindex)
 /llms.txt               Resumen del sitio para motores generativos
@@ -340,14 +373,14 @@ Si cambias los SVG, ejecuta `npm run brand` y ajusta en `src/config/site.ts` →
 ```
 
 **El sitio es monolingüe.** Todo se publica en español y no existe ningún
-segmento de idioma en las URLs: la portada es `/` y cada mercado vive en
-`/<código ISO>/`. No hay selector de idioma, ni traducciones, ni la misma página
+segmento de idioma en las URLs: la portada es `/` y cada mercado vive en su
+guía, `/blog/exness-en-<país>/`. No hay selector de idioma, ni traducciones, ni la misma página
 repetida bajo prefijos distintos.
 
 La portada cubre lo que no cambia entre jurisdicciones —tipos de cuenta,
-comparativa, plataformas, proceso de alta—. Las 15 landings cubren lo que sí
-cambia: entidad, apalancamiento aplicable, divisa, métodos de depósito locales y
-activos más operados.
+comparativa, plataformas, proceso de alta—. Las guías cubren lo que sí cambia,
+escrito para cada país: qué entidad atiende, cómo depositar con los métodos
+locales, cuánto tarda un retiro y cómo se declara.
 
 ---
 
@@ -365,7 +398,7 @@ Ningún botón enlaza directamente a `one.exnessonelink.com`. Todos pasan por
 
 Esto da cuatro cosas:
 
-1. Cambias un enlace en un archivo y se actualiza en las 28 páginas.
+1. Cambias un enlace en un archivo y se actualiza en todas las páginas.
 2. Mides el CTR por posición y por país en GA4 (`event: affiliate_click`).
 3. Los salientes llevan `rel="sponsored nofollow noopener"` y quedan `noindex`.
 4. Los programas de socios prohíben los anuncios que apuntan directo al enlace
@@ -381,7 +414,13 @@ pierde.
 
 ### Un país
 
-Un objeto en `src/config/countries.ts` y ya existe su landing:
+Tres pasos, y el segundo es el que importa:
+
+1. Un objeto en `src/config/countries.ts`.
+2. Su guía escrita a mano en `src/content/blog/exness-en-<país>.md`. Sin ella,
+   el país no aparece en las listas de guías y enlaza a la portada.
+3. Sus dos líneas de 301 en `public/_redirects` (`/cr` y `/cr/`). Al escribir la
+   guía de uno de los cinco que hoy van a la portada, cambia su destino.
 
 ```ts
 {
@@ -397,21 +436,15 @@ y si puede anunciarse el apalancamiento escalado.
 
 **Antes de añadir uno, comprueba que no está en `BLOCKED_COUNTRIES`** — aunque
 ya no hace falta de memoria: `assertMarketsAllowed()` rompe el build si lo está.
-Y añade sólo mercados donde vayas a poner contenido propio en `local-copy.ts`:
-20 páginas casi idénticas rinden menos que 6 bien diferenciadas.
 
 ### Copy de la interfaz
 
 Todo el texto vive en `src/i18n/locales/es.ts`, con marcadores que se resuelven
 solos: `{min}`, `{minWallet}`, `{minPro}`, `{leverage}`, `{country}`, `{year}`, `{entity}`,
 `{clients}`, `{volume}`… `useT(country)` inyecta los valores de ese mercado, así
-que una cadena escrita una vez sale correcta en las 15 landings.
+que una cadena escrita una vez sale correcta en todas las páginas.
 
 ### Un artículo
-
-**Ahora mismo el blog no publica nada, a propósito.** La estructura está entera
-y funcionando —índice, RSS, sitemap, rutas, schema—, simplemente no hay
-artículos.
 
 La plantilla con todos los campos, sus límites y qué hace cada uno está en
 **`src/content/blog/_plantilla.md`**. Lleva `draft: true`, así que no genera
@@ -427,11 +460,9 @@ Si borras la plantilla y no hay ningún artículo, el sitio **sigue compilando**
 el índice muestra el texto de `blog.empty` y el RSS sale con el canal vacío.
 Sólo vuelve el aviso del build.
 
-**Guías por país.** `guideFor()` busca por convención de nombre: la landing de un
-mercado enlaza automáticamente a su guía si existe un artículo con el slug
-`exness-en-<país-sin-tildes>` — `exness-en-mexico.md`,
-`exness-en-republica-dominicana.md`. Si no existe, la landing no muestra el
-bloque y no pasa nada.
+**Guías por país.** Son la página de cada mercado. `countryPath()` las encuentra
+por convención de nombre: `exness-en-<país-sin-tildes>` — `exness-en-mexico.md`,
+`exness-en-republica-dominicana.md`. Ver «Un país» arriba.
 
 ---
 
@@ -442,8 +473,8 @@ bloque y no pasa nada.
 
 ### Sitemap
 
-`/sitemap-index.xml` → `/sitemap-0.xml`, con **24 URLs**: las 28 páginas menos
-las 3 del redirector y el 404. Se regenera solo en cada build.
+`/sitemap-index.xml` → `/sitemap-0.xml`, con **22 URLs**: las páginas menos
+las 3 del redirector, `/offline/` y el 404. Las guías de país van con prioridad 0.9. Se regenera solo en cada build.
 
 No lleva la opción `i18n` de `@astrojs/sitemap`, y es a propósito: esa opción da
 por hecho que el primer segmento de la URL es un idioma. Aquí es un país, y
@@ -451,21 +482,10 @@ además no hay traducciones.
 
 ### hreflang
 
-**324 anotaciones, 18 páginas, 0 destinos inexistentes, 0 fallos de
-reciprocidad**, verificado sobre el HTML compilado.
-
-Hay un solo grupo y es el que importa en un sitio monolingüe con varios
-mercados: las 15 landings son la misma página en español dirigida a países
-distintos, anotadas con idioma + región — `es-MX`, `es-CO`, `es-AR`… Es lo que
-hace que Google sirva `/mx/` a México y `/co/` a Colombia en lugar de elegir una
-y tratar el resto como duplicado.
-
-El grupo lo forman las 15 landings más la portada, que actúa de `x-default`.
-Blog y legales no llevan hreflang: no tienen alternativas que declarar.
-
-La regla que lo mantiene íntegro: **todos los miembros declaran exactamente la
-misma lista, la portada incluida.** Si una declarara menos, Google descartaría su
-bloque entero. Lo genera `countryAlternates()` en `src/lib/seo.ts`.
+No hay. El único grupo lo formaban las 15 landings de país más la portada, y
+las landings se retiraron (ver arriba). Las guías no son variantes regionales
+de una misma página sino artículos distintos, así que no tienen alternativas
+que declarar.
 
 ### robots.txt
 

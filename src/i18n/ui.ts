@@ -1,6 +1,6 @@
 import { SITE } from '../config/site';
 import { ACCOUNTS, ENTITIES, STATS, type Entity } from '../config/offers';
-import { countryEntity, type Country } from '../config/countries';
+import { countryEntity, getCountry, guideSlug, type Country } from '../config/countries';
 
 import es from './locales/es';
 
@@ -80,9 +80,40 @@ export function path(...segments: Array<string | number>): string {
   return `/${parts.join('/')}${parts.length ? '/' : ''}`;
 }
 
-/** Landing de un mercado: /mx/ */
+/**
+ * Slugs de los artículos del blog, leídos del disco al compilar.
+ *
+ * countryPath() es síncrona y la colección de contenido no: listar los
+ * archivos basta para saber si la guía de un país está escrita.
+ */
+const POSTS = new Set(
+  Object.keys(import.meta.glob('../content/blog/*.md')).map((file) =>
+    file.slice(file.lastIndexOf('/') + 1, -'.md'.length),
+  ),
+);
+
+/**
+ * Página de un mercado: su guía del blog (/blog/exness-en-mexico/).
+ *
+ * Las landings /mx/, /co/… se retiraron: eran la misma plantilla con el
+ * nombre del país cambiado y Google dejó de mostrar el sitio entero. La guía
+ * es el contenido escrito a mano para cada país, así que todo enlace a un
+ * mercado —selector, retícula, pie, aviso geográfico— lleva ahí. Un país sin
+ * guía escrita cae a la portada.
+ */
 export function countryPath(code: string): string {
-  return path(code);
+  const country = getCountry(code);
+  const slug = country ? guideSlug(country) : '';
+  return POSTS.has(slug) ? blogPath(slug) : path();
+}
+
+/**
+ * ¿Tiene el país su guía escrita? Las listas que se presentan como «una guía
+ * por país» sólo muestran los que sí: un enlace con el nombre de Costa Rica
+ * que lleva a la portada promete algo que no hay.
+ */
+export function hasGuide(code: string): boolean {
+  return countryPath(code) !== path();
 }
 
 export function blogPath(...rest: string[]): string {

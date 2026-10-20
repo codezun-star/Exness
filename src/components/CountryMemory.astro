@@ -12,14 +12,17 @@ const { country } = Astro.props;
  * Memoria de mercado.
  *
  * El sitio es estático: el blog, las legales y la portada se compilan una sola
- * vez y no saben de qué país viene el visitante. Sin esto, alguien que estaba
- * en /hn/ abría un artículo y la cabecera volvía a decir «País», los CTA
- * perdían el parámetro de mercado y el siguiente clic ya no atribuía el país.
+ * vez y no saben de qué país viene el visitante. Sin esto, quien elegía
+ * Honduras en el selector abría un artículo y la cabecera volvía a decir
+ * «País», los CTA perdían el parámetro de mercado y el siguiente clic ya no
+ * atribuía el país.
  *
  * Así que el mercado se recuerda en el navegador y se vuelve a aplicar en las
- * páginas que no lo llevan en la URL: etiqueta del selector, enlaces de la
- * cabecera y parámetro `c=` de todos los enlaces de afiliado. El visitante
- * sigue en su país hasta que elija otro en el selector.
+ * páginas que no lo llevan en la URL: etiqueta del selector y parámetro `c=`
+ * de todos los enlaces de afiliado. Los enlaces de la cabecera ya no se
+ * reescriben: apuntaban a la landing del país ("/hn/#cuentas"), y las
+ * landings se retiraron. El visitante sigue en su país hasta que elija otro
+ * en el selector.
  */
 const data = {
   current: (country ?? '').toLowerCase(),
@@ -84,14 +87,6 @@ const data = {
         // La etiqueta del selector: la señal visible de que sigues en tu país.
         document.querySelectorAll('[data-country-label]').forEach((el) => {
           el.textContent = upper;
-        });
-
-        // Enlaces de la cabecera construidos sobre la portada ("/#cuentas")
-        // pasan a apuntar al mercado recordado ("/hn/#cuentas").
-        document.querySelectorAll<HTMLAnchorElement>('[data-market-link]').forEach((el) => {
-          const href = el.getAttribute('href');
-          if (!href || !href.startsWith('/') || href.startsWith('//')) return;
-          el.setAttribute('href', `/${saved}${href}`);
         });
 
         // Enlaces de afiliado: sin `c=` la comisión llega sin país y no se

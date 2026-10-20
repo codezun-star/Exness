@@ -1,31 +1,56 @@
 # Cloudflare Pages / Netlify
 #
 # Sitio monolingüe en español, sin prefijo de idioma: la portada es "/" y cada
-# mercado vive en /<código ISO>/. La raíz NO redirige — es una página indexable
-# y el x-default del grupo hreflang. La sugerencia geográfica se hace en el
+# mercado vive en su guía, /blog/exness-en-<país>/. La raíz NO redirige — es
+# una página indexable. La sugerencia geográfica se hace en el
 # cliente (src/components/GeoNotice.astro), que es lo que Google acepta sin
 # considerarlo cloaking.
 
-# Atajos sin barra final para campañas y material impreso.
+# Landings de país retiradas el 2026-10-20.
 #
-# Están los quince mercados, no sólo los prioritarios. Un código impreso o
-# dictado se teclea sin barra final, se llame /mx o /hn, y el mercado que se
-# quedaba fuera de esta lista respondía 404 en vez de a su landing.
-/mx      /mx/    301
-/co      /co/    301
-/cl      /cl/    301
-/pe      /pe/    301
-/ar      /ar/    301
-/ec      /ec/    301
-/ve      /ve/    301
-/pa      /pa/    301
-/bo      /bo/    301
-/gt      /gt/    301
-/cr      /cr/    301
-/do      /do/    301
-/py      /py/    301
-/sv      /sv/    301
-/hn      /hn/    301
+# /mx/, /co/… eran la misma plantilla con el nombre del país cambiado: un 81%
+# del texto se repetía entre cualquier par, y Google dejó de mostrar el sitio
+# entero a las tres semanas del lanzamiento. Cada mercado vive ahora en su guía
+# del blog, que es el contenido escrito a mano para ese país. El 301 conserva
+# lo que la landing hubiera acumulado y, con y sin barra final, va directo al
+# destino: sin una cadena de dos saltos.
+#
+# Si añades un país en src/config/countries.ts, añade también sus dos líneas.
+/mx     /blog/exness-en-mexico/ 301
+/mx/    /blog/exness-en-mexico/ 301
+/co     /blog/exness-en-colombia/ 301
+/co/    /blog/exness-en-colombia/ 301
+/cl     /blog/exness-en-chile/ 301
+/cl/    /blog/exness-en-chile/ 301
+/pe     /blog/exness-en-peru/ 301
+/pe/    /blog/exness-en-peru/ 301
+/ar     /blog/exness-en-argentina/ 301
+/ar/    /blog/exness-en-argentina/ 301
+/ec     /blog/exness-en-ecuador/ 301
+/ec/    /blog/exness-en-ecuador/ 301
+/bo     /blog/exness-en-bolivia/ 301
+/bo/    /blog/exness-en-bolivia/ 301
+/ve     /blog/exness-en-venezuela/ 301
+/ve/    /blog/exness-en-venezuela/ 301
+/do     /blog/exness-en-republica-dominicana/ 301
+/do/    /blog/exness-en-republica-dominicana/ 301
+/hn     /blog/exness-en-honduras/ 301
+/hn/    /blog/exness-en-honduras/ 301
+
+# Sin guía escrita todavía (Guatemala, Costa Rica, Panamá, Paraguay y
+# El Salvador): a la portada, que sí tiene contenido propio. Cuando se escriba
+# su guía, cambiar aquí el destino.
+/gt     /      301
+/gt/    /      301
+/cr     /      301
+/cr/    /      301
+/pa     /      301
+/pa/    /      301
+/py     /      301
+/py/    /      301
+/sv     /      301
+/sv/    /      301
+
 /blog    /blog/  301
 
 # Mercados retirados en la revisión de 2026-08.

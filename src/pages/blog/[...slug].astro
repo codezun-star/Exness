@@ -6,11 +6,14 @@ import Banner from '../../components/Banner.astro';
 import CtaStrip from '../../components/CtaStrip.astro';
 import SideRails from '../../components/SideRails.astro';
 import Video from '../../components/Video.astro';
+import Network from '../../components/Network.astro';
 
 import { goUrl } from '../../config/affiliate';
 import { useT, blogPath } from '../../i18n/ui';
 import { abs, readingTime } from '../../lib/seo';
-import { allPosts, postSlug, relatedTo, formatDate, type Post } from '../../lib/blog';
+import {
+  allPosts, postSlug, relatedTo, formatDate, guideCountry, type Post,
+} from '../../lib/blog';
 import {
   graph, organization, website, webPage, brokerEntity, blogPosting,
   breadcrumbs, faqPage,
@@ -37,6 +40,12 @@ const minutes = readingTime(post.body ?? '');
 const words = (post.body ?? '').trim().split(/\s+/).length;
 
 const related = await relatedTo(post);
+
+/**
+ * La guía de un país es la página de ese mercado desde que se retiraron las
+ * landings, así que hereda de ellas el puente hacia el comparador de la red.
+ */
+const market = guideCountry(post);
 
 /** Sólo los h2 entran en el índice: los h3 harían la lista ilegible. */
 const toc = (headings ?? []).filter((h) => h.depth === 2);
@@ -226,6 +235,7 @@ const schema = graph(
     </SideRails>
   </article>
 
+  {market && <Network country={market} />}
   <CtaBand source={`blog-${slug}`} />
 </Base>
 

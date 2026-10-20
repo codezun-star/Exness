@@ -1,5 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { INTL_LOCALE } from '../i18n/ui';
+import { COUNTRIES, guideSlug, type Country } from '../config/countries';
 
 export type Post = CollectionEntry<'blog'>;
 
@@ -33,27 +34,9 @@ export async function relatedTo(post: Post, limit = 3): Promise<Post[]> {
     .map((entry) => entry.post);
 }
 
-/** "República Dominicana" → "republica-dominicana". */
-export function slugifyName(name: string): string {
-  return name
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-/**
- * La guía dedicada a un mercado, si existe y está publicada.
- *
- * El slug se deriva del nombre del país en vez de guardarse en un campo
- * aparte: así añadir un mercado y su artículo no obliga a mantener un mapa
- * sincronizado a mano, y si el artículo todavía no existe la función
- * devuelve undefined y la landing simplemente no enlaza a ninguna parte.
- */
-export async function guideFor(name: string): Promise<Post | undefined> {
-  const slug = `exness-en-${slugifyName(name)}`;
-  return (await allPosts()).find((post) => postSlug(post) === slug);
+/** El mercado del que trata un artículo, si es la guía de un país. */
+export function guideCountry(post: Post): Country | undefined {
+  return COUNTRIES.find((c) => guideSlug(c) === postSlug(post));
 }
 
 export function formatDate(date: Date): string {

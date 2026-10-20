@@ -56,14 +56,19 @@ build si algo no cuadra — un título de 80 caracteres no llega a producción.
 
 ## Guías por país
 
-`guideFor()`, en `src/lib/blog.ts`, busca por convención de nombre: la landing
-de un mercado enlaza automáticamente a su guía si existe un artículo con el
-slug `exness-en-<nombre-del-país-sin-tildes>`.
+La guía de un país **es la página de ese mercado**: las landings `/mx/`, `/co/`…
+se retiraron el 2026-10-20 y redirigen a ella. `countryPath()`, en
+`src/i18n/ui.ts`, la encuentra por convención de nombre: el slug es
+`exness-en-<nombre-del-país-sin-tildes>`.
 
 Para México eso es `exness-en-mexico.md`; para República Dominicana,
-`exness-en-republica-dominicana.md`. No hay que registrar la relación en
-ningún sitio: si el archivo existe y está publicado, la landing lo enlaza; si
-no existe, la landing simplemente no muestra el bloque de guía.
+`exness-en-republica-dominicana.md`. Si el archivo existe, todo enlace al país
+—selector, retícula, pie, aviso geográfico— lleva a la guía; si no existe,
+lleva a la portada. Al publicar la guía de un país que aún no la tenía, cambia
+también el destino de su 301 en `public/_redirects`.
+
+Escríbela a mano y para ese país. Lo que tumbó las landings fue justo lo
+contrario: la misma plantilla con el nombre cambiado.
 
 ## Reglas de contenido que no conviene romper
 

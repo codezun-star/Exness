@@ -1,6 +1,6 @@
 /**
  * Diccionario de la interfaz. El sitio es monolingüe: este archivo es TODO el
- * texto que no vive en el blog ni en local-copy.ts.
+ * texto que no vive en el blog.
  *
  * Placeholders disponibles, resueltos por useT(country) sin pasarlos a mano:
  *   {country} {leverage} {min} {minWallet} {minPro} {spread} {instruments}
@@ -183,7 +183,7 @@ const es = {
   'country.assets': 'Lo más operado desde {country}',
   'country.assetsSub': 'Instrumentos con mayor volumen entre traders de la región.',
   'country.others': 'Otros países',
-  'country.othersSub': 'Consulta las condiciones que aplican en tu país de residencia.',
+  'country.othersSub': 'Una guía por país: qué entidad te atiende, cómo depositar con los métodos locales y cuánto tarda un retiro.',
   'country.breadcrumb': 'Países',
   'local.title': 'Lo que cambia si operas desde {country}',
   'country.localRegulator': 'Regulador local',
@@ -258,10 +258,10 @@ const es = {
   'country.choose': 'Elige tu país',
   'country.label': 'País',
   'country.all': 'Todos los países',
-  'geo.suggest': 'Parece que estás en {country}. ¿Quieres ver las condiciones de tu país?',
+  'geo.suggest': 'Parece que estás en {country}. ¿Quieres leer la guía de Exness para tu país?',
   // Versión corta para móvil: la barra tiene que caber en una línea.
-  'geo.suggestShort': '¿Ver condiciones de {country}?',
-  'geo.go': 'Ir a {country}',
+  'geo.suggestShort': '¿Ver la guía de {country}?',
+  'geo.go': 'Guía de {country}',
   'geo.stay': 'Seguir aquí',
   'go.title': 'Redirigiendo a Exness…',
   'go.text': 'Si no se abre automáticamente, pulsa el botón.',

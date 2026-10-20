@@ -1,14 +1,14 @@
 ---
 import '../styles/global.css';
 import { SITE, BRAND } from '../config/site';
-import { COUNTRIES_BY_TIER, countryHreflang } from '../config/countries';
-import { useT, countryPath } from '../i18n/ui';
+import { COUNTRIES_BY_TIER } from '../config/countries';
+import { useT, countryPath, hasGuide } from '../i18n/ui';
 import Banner from '../components/Banner.astro';
 
 const t = useT();
 
 /** Los mercados prioritarios: es la salida útil desde una URL rota. */
-const markets = COUNTRIES_BY_TIER.filter((c) => c.tier === 1);
+const markets = COUNTRIES_BY_TIER.filter((c) => c.tier === 1 && hasGuide(c.code));
 ---
 
 <html lang="es" dir="ltr">
@@ -48,7 +48,6 @@ const markets = COUNTRIES_BY_TIER.filter((c) => c.tier === 1);
               <li>
                 <a
                   href={countryPath(c.code)}
-                  hreflang={countryHreflang(c)}
                 >
                   <span class="code">{c.code.toUpperCase()}</span>
                   <span>{c.name}</span>

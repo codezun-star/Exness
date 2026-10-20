@@ -4,7 +4,7 @@ import Icon from './Icon.astro';
 import { SITE, BRAND } from '../config/site';
 import { goUrl } from '../config/affiliate';
 import type { Country } from '../config/countries';
-import { useT, countryPath, blogPath } from '../i18n/ui';
+import { useT, blogPath } from '../i18n/ui';
 
 interface Props {
   country?: Country;
@@ -19,25 +19,15 @@ interface Props {
 const { country, back } = Astro.props;
 const t = useT(country);
 
-/** En una página de país, "inicio" es ese país. Fuera de él, el selector. */
-const home = country ? countryPath(country.code) : '/';
-
-/**
- * Fuera de una landing de mercado, estos enlaces nacen apuntando a la portada
- * y CountryMemory les antepone el mercado recordado en el navegador
- * ("/#cuentas" -> "/hn/#cuentas"). El marcador sólo se pone cuando hace
- * falta: en una página de país el enlace ya lleva el mercado correcto.
- */
-const market = country ? undefined : true;
+/** Sin landings de país, la portada es el único inicio: ahí están las cuentas, las plataformas y las preguntas. */
+const home = '/';
 
 const nav = [
-  { label: t('nav.accounts'), href: `${home}#cuentas`, market },
-  { label: t('nav.platforms'), href: `${home}#plataformas`, market },
-  // "Países" es la única entrada que no se reescribe: fuera de una landing
-  // lleva a la portada, que es donde está la retícula de mercados.
-  { label: t('nav.countries'), href: country ? `${home}#paises` : '/' },
+  { label: t('nav.accounts'), href: `${home}#cuentas` },
+  { label: t('nav.platforms'), href: `${home}#plataformas` },
+  { label: t('nav.countries'), href: `${home}#paises` },
   { label: t('nav.blog'), href: blogPath() },
-  { label: t('nav.faq'), href: `${home}#faq`, market },
+  { label: t('nav.faq'), href: `${home}#faq` },
 ];
 ---
 
@@ -49,7 +39,7 @@ const nav = [
       </a>
     )}
 
-    <a href={home} class="wordmark" data-market-link={market} aria-label={SITE.brand}>
+    <a href={home} class="wordmark" aria-label={SITE.brand}>
       <img
         src={BRAND.lockup.src}
         width={BRAND.lockup.width}
@@ -62,7 +52,7 @@ const nav = [
 
     <nav class="site-nav" aria-label={t('nav.menu')}>
       {nav.map((item) => (
-        <a href={item.href} data-market-link={item.market}>{item.label}</a>
+        <a href={item.href}>{item.label}</a>
       ))}
     </nav>
 

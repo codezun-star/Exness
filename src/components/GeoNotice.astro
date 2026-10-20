@@ -1,7 +1,7 @@
 ---
 import { COUNTRIES } from '../config/countries';
 import { BLOCKED_COUNTRIES } from '../config/offers';
-import { useT, countryPath } from '../i18n/ui';
+import { useT, countryPath, hasGuide } from '../i18n/ui';
 
 interface Props {
   /** Código del país que ya se está mostrando, para no sugerirse a sí mismo */
@@ -13,7 +13,9 @@ const t = useT();
 
 /** Mapa mínimo país -> {nombre, url} que se serializa al cliente. */
 const map = Object.fromEntries(
-  COUNTRIES.map((c) => [
+  // Sólo los países con guía: sugerir «Guía de Panamá» y mandar a la portada
+  // sería un aviso que no cumple lo que dice.
+  COUNTRIES.filter((c) => hasGuide(c.code)).map((c) => [
     c.code.toUpperCase(),
     { n: c.name, u: countryPath(c.code) },
   ]),

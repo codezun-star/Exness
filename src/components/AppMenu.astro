@@ -2,7 +2,7 @@
 import Icon from './Icon.astro';
 import { goUrl } from '../config/affiliate';
 import type { Country } from '../config/countries';
-import { useT, countryPath, blogPath, legalPath } from '../i18n/ui';
+import { useT, blogPath, legalPath } from '../i18n/ui';
 
 interface Props {
   country?: Country;
@@ -21,15 +21,14 @@ const t = useT(country);
  * cierre con Escape y el fondo inerte, y el aspa va en un <form
  * method="dialog"> para que cierre aunque el JavaScript no llegue a correr.
  */
-const home = country ? countryPath(country.code) : '/';
-const market = country ? undefined : true;
+const home = '/';
 
 const nav = [
-  { icon: 'accounts', label: t('nav.accounts'), href: `${home}#cuentas`, market },
-  { icon: 'platforms', label: t('nav.platforms'), href: `${home}#plataformas`, market },
-  { icon: 'countries', label: t('nav.countries'), href: country ? `${home}#paises` : '/' },
+  { icon: 'accounts', label: t('nav.accounts'), href: `${home}#cuentas` },
+  { icon: 'platforms', label: t('nav.platforms'), href: `${home}#plataformas` },
+  { icon: 'countries', label: t('nav.countries'), href: `${home}#paises` },
   { icon: 'blog', label: t('nav.blog'), href: blogPath() },
-  { icon: 'faq', label: t('nav.faq'), href: `${home}#faq`, market },
+  { icon: 'faq', label: t('nav.faq'), href: `${home}#faq` },
 ] as const;
 
 const legal = [
@@ -57,7 +56,7 @@ const legal = [
       <ul class="sheet-list">
         {nav.map((item) => (
           <li>
-            <a class="sheet-row" href={item.href} data-market-link={'market' in item ? item.market : undefined}>
+            <a class="sheet-row" href={item.href}>
               <Icon name={item.icon} />
               <span class="sheet-row-label">{item.label}</span>
               <Icon name="next" size={16} class="sheet-row-next" />

@@ -2,7 +2,7 @@
 import Icon from './Icon.astro';
 import { goUrl } from '../config/affiliate';
 import type { Country } from '../config/countries';
-import { useT, countryPath, blogPath } from '../i18n/ui';
+import { useT, blogPath } from '../i18n/ui';
 
 interface Props {
   country?: Country;
@@ -19,13 +19,9 @@ const t = useT(country);
  * dock de conversión, que era una segunda barra fija compitiendo por el mismo
  * borde. Aquí la navegación queda al alcance del pulgar y el CTA principal va
  * en el centro, que es el sitio que en cualquier app ocupa la acción primaria.
- *
- * Mismo criterio de mercado que la cabecera: fuera de una landing de país los
- * enlaces nacen apuntando a la portada y CountryMemory les antepone el mercado
- * recordado.
+
  */
-const home = country ? countryPath(country.code) : '/';
-const market = country ? undefined : true;
+const home = '/';
 
 const here = Astro.url.pathname;
 const inBlog = here.startsWith(blogPath());
@@ -36,7 +32,6 @@ const atHome = here === home || here === '/';
   <a
     class="tab"
     href={home}
-    data-market-link={market}
     data-tab="home"
     aria-current={atHome ? 'page' : undefined}
   >
@@ -44,7 +39,7 @@ const atHome = here === home || here === '/';
     <span class="tab-label">{t('nav.home')}</span>
   </a>
 
-  <a class="tab" href={`${home}#cuentas`} data-market-link={market} data-tab="accounts">
+  <a class="tab" href={`${home}#cuentas`} data-tab="accounts">
     <Icon name="accounts" />
     <span class="tab-label">{t('nav.accounts')}</span>
   </a>

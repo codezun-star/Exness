@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { SITE } from '../config/site';
 import { COUNTRIES, COUNTRIES_BY_TIER, countryEntity } from '../config/countries';
+import { countryPath } from '../i18n/ui';
 import {
   ACCOUNTS, ENTITIES, GROUP_LICENCES, STATS, PLATFORMS, BLOCKED_COUNTRIES,
 } from '../config/offers';
@@ -72,13 +73,13 @@ export const GET: APIRoute = async () => {
     '',
     '## Estructura del sitio',
     '',
-    `Sitio monolingüe en español dirigido a los mercados hispanohablantes. La portada (${SITE.url}/) cubre lo que no cambia entre jurisdicciones; cada uno de los ${COUNTRIES.length} mercados hispanoamericanos tiene además su propia página en ${SITE.url}/<código ISO>/ con la entidad reguladora, el apalancamiento y los métodos de depósito que le aplican. No hay prefijo de idioma en las URLs ni versiones en otros idiomas.`,
+    `Sitio monolingüe en español dirigido a los mercados hispanohablantes. La portada (${SITE.url}/) cubre lo que no cambia entre jurisdicciones; cada uno de los ${COUNTRIES.length} mercados hispanoamericanos tiene además su guía en ${SITE.url}/blog/exness-en-<país>/ con la entidad que atiende, los métodos de depósito locales, los plazos de retiro y la fiscalidad; los que aún no la tienen enlazan a la portada. No hay prefijo de idioma en las URLs ni versiones en otros idiomas.`,
     '',
     '## Páginas por mercado',
     '',
     ...COUNTRIES_BY_TIER.map(
       (c) =>
-        `- [Exness ${c.name}](${SITE.url}/${c.code}/) — entidad ${countryEntity(c).regulator}, apalancamiento ${countryEntity(c).maxLeverage}, divisa ${c.currency}, pagos: ${c.payments.join(', ')}.`,
+        `- [Exness ${c.name}](${SITE.url}${countryPath(c.code)}) — entidad ${countryEntity(c).regulator}, apalancamiento ${countryEntity(c).maxLeverage}, divisa ${c.currency}, pagos: ${c.payments.join(', ')}.`,
     ),
     '',
     '## Artículos del blog',
