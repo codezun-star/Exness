@@ -1,6 +1,6 @@
 ---
 import { SITE, BRAND } from '../config/site';
-import { PARTNER_CODE, goUrl } from '../config/affiliate';
+import { goUrl } from '../config/affiliate';
 import { ENTITIES } from '../config/offers';
 import { COUNTRIES_BY_TIER, siblingsOf, type Country } from '../config/countries';
 import { useT, countryPath, hasGuide, blogPath, legalPath } from '../i18n/ui';
@@ -69,9 +69,6 @@ const regulators = Object.values(ENTITIES).map(
           </a>
           <p class="eyebrow">{t('footer.about')}</p>
           <p class="footer-text">{t('footer.aboutText')}</p>
-          <p class="footer-code mono">
-            {t('nav.cta')} · {PARTNER_CODE}
-          </p>
         </div>
 
         <div class="footer-col">
@@ -209,14 +206,6 @@ const regulators = Object.values(ENTITIES).map(
     color: var(--color-muted-2);
     max-width: 44ch;
     margin: 0;
-  }
-
-  .footer-code {
-    margin-top: 1.25rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-accent);
   }
 
   .footer-col .linklist a { font-size: 0.875rem; }

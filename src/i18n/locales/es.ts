@@ -239,6 +239,7 @@ const es = {
   'legal.privacy': 'Privacidad',
   'legal.terms': 'Términos de uso',
   'legal.affiliate': 'Divulgación de afiliación',
+  'legal.partnerCode': 'Código de socio',
   'legal.cookies': 'Cookies',
 
   // ── Micro-interacciones ───────────────────────────────────────
